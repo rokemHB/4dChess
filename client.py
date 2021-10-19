@@ -64,7 +64,7 @@ def main():
     n = Network()
     startPos = read_pos(n.getPos())  # Player 1, 2, etc.
     p = Player(startPos[0], startPos[1], 100, 100, (0, 255, 0))
-    p2 = Player(0, 0, 100, 100, (0, 255, 0))
+    p2 = Player(0, 0, 100, 100, (255, 0, 0))
     clock = pygame.time.Clock()
 
     while run:
