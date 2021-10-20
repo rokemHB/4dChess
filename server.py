@@ -2,7 +2,7 @@ import socket
 from _thread import *
 import sys
 
-server = "192.168.178.30"  # local address for now
+server = "10.51.1.141"  #"192.168.178.30"  # local address for now
 port = 5555
 
 # AF_INET for ipv4
