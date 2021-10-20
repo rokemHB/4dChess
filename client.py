@@ -9,6 +9,7 @@ pygame.display.set_caption("client")
 clientNumber = 0
 
 
+# mini pygame example to test network stuff
 class Player():
     def __init__(self, x, y, width, height, color):
         self.x = x
@@ -44,8 +45,8 @@ class Player():
 
 
 def read_pos(str):
-        str = str.split(",")
-        return int(str[0]), int(str[1])
+    str = str.split(",")
+    return int(str[0]), int(str[1])
 
 
 def make_pos(tup):

@@ -2,9 +2,11 @@ import pygame
 
 from chess.constants import *
 
+
 class Board:
+
     def __init__(self):
-        self.board = []
+        self.board = [None] * 196
         self.selected_piece = None
 
     def draw_squares(self, win):
