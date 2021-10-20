@@ -1,6 +1,8 @@
 import pygame
 
+
 from chess.constants import *
+from chess.pieces.pawn import Pawn
 
 
 class Board:
@@ -28,5 +30,22 @@ class Board:
         for row in range(ROWS):
             for col in range(COLS):
                 number = thisfont.render(str(i), True, (255, 0, 0))
+                win.blit(number, (col * SQUARE_SIZE + SQUARE_SIZE / 8, row * SQUARE_SIZE + SQUARE_SIZE / 1.3))
+                i += 1
+
+    def new_game(self):
+        self.board[3] = Pawn(3)
+
+    def draw_pieces(self,win):
+        i = 0
+        for row in range(ROWS):
+            for col in range(COLS):
+                if self.board[i] is None:
+                    pass
+                if self.board[i] is Pawn:
+                    win.blit(IMAGES['bp'], (col * SQUARE_SIZE + SQUARE_SIZE / 8, row * SQUARE_SIZE + SQUARE_SIZE / 1.3))
+
+
+
                 win.blit(number, (col * SQUARE_SIZE + SQUARE_SIZE / 8, row * SQUARE_SIZE + SQUARE_SIZE / 1.3))
                 i += 1

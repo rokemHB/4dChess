@@ -38,6 +38,8 @@ def main():
 
             board.draw_squares(WIN)
             board.draw_numbers(WIN, font)
+            board.new_game()
+            board.draw_pieces(WIN)
 
             pygame.display.update()
 
