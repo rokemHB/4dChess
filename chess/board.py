@@ -34,19 +34,19 @@ class Board:
                 i += 1
 
     def new_game(self, win):
-        self.board[17] = Pawn(3)
-        self.board[18] = Pawn(4)
-        self.board[19] = Pawn(5)
-        self.board[20] = Pawn(6)
-        self.board[21] = Pawn(7)
-        self.board[22] = Pawn(8)
-        self.board[23] = Pawn(9)
-        self.board[24] = Pawn(10)
+        self.board[17] = Pawn(3, 'n')
+        self.board[18] = Pawn(4, 'n')
+        self.board[19] = Pawn(5, 'n')
+        self.board[20] = Pawn(6, 'n')
+        self.board[21] = Pawn(7, 'n')
+        self.board[22] = Pawn(8, 'n')
+        self.board[23] = Pawn(9, 'n')
+        self.board[24] = Pawn(10, 'n')
         self.load_images()
         self.draw_pieces(win)
 
     def load_images(self):
-        pieces = ['wp', 'wR', 'wN', 'wB', 'wK', 'wQ', 'bp', 'bR', 'bN', 'bB', 'bK', 'bQ']
+        pieces = ['sp', 'sR', 'sN', 'sB', 'sK', 'sQ', 'np', 'nR', 'nN', 'nB', 'nK', 'nQ']
         for piece in pieces:
             self.IMAGES[piece] = pygame.transform.scale(pygame.image.load("images/" + piece + ".png"),
                                                         (SQUARE_SIZE, SQUARE_SIZE))
@@ -55,7 +55,8 @@ class Board:
         i = 0
         for row in range(ROWS):
             for col in range(COLS):
-                if isinstance(self.board[i], Pawn):
-                    win.blit(self.IMAGES['bp'], (col * SQUARE_SIZE, row * SQUARE_SIZE))
+                if self.board[i] is not None:
+                    filename = self.board[i].get_draw_info()
+                    win.blit(self.IMAGES[filename], (col * SQUARE_SIZE, row * SQUARE_SIZE))
 
                 i += 1
