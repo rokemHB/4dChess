@@ -33,6 +33,7 @@ class Board:
                 win.blit(number, (col * SQUARE_SIZE + SQUARE_SIZE / 8, row * SQUARE_SIZE + SQUARE_SIZE / 1.3))
                 i += 1
 
+    # replace this with FEN positions at some point
     def new_game(self, win):
         self.board[17] = Pawn(3, 'n')
         self.board[18] = Pawn(4, 'n')
