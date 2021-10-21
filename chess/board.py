@@ -10,8 +10,10 @@ from chess.pieces.rook import Rook
 
 
 class Board:
+    # stores the piece pngs
     IMAGES = {}
 
+    # standard start position - north / south / west / east
     startPositions = [
         Pawn(17, 'n'), Pawn(18, 'n'), Pawn(19, 'n'), Pawn(20, 'n'),
         Pawn(21, 'n'), Pawn(22, 'n'), Pawn(23, 'n'), Pawn(24, 'n'),
@@ -57,7 +59,7 @@ class Board:
         for row in range(ROWS):
             for col in range(COLS):
                 number = thisfont.render(str(i), True, (255, 0, 0))
-                win.blit(number, (col * SQUARE_SIZE + SQUARE_SIZE / 8, row * SQUARE_SIZE + SQUARE_SIZE / 1.3))
+                win.blit(number, (col * SQUARE_SIZE + SQUARE_SIZE / 15, row * SQUARE_SIZE + SQUARE_SIZE / 1.13))
                 i += 1
 
     # replace this with FEN positions at some point
@@ -84,3 +86,31 @@ class Board:
                     win.blit(self.IMAGES[filename], (col * SQUARE_SIZE, row * SQUARE_SIZE))
 
                 i += 1
+
+    def coordinates_to_square(self, x, y):
+        x_offset = WIDTH / 14  # float division
+        y_offset = HEIGHT / 14
+
+        x_square = x // x_offset  # integer division
+        y_square = y // y_offset
+
+        return int(x_square + 14 * y_square)
+
+    def click(self, pos, piece_drag, win):
+
+        if not piece_drag:
+            clicked_square = self.board[self.coordinates_to_square(pos[0], pos[1])]  # gets the piece object
+            filename = clicked_square.get_draw_info()
+        else:
+            # elif clicked_square   # test if its players own piece
+            win.blit(self.IMAGES[filename], (pos[0] - SQUARE_SIZE / 2, pos[1] - SQUARE_SIZE / 2))
+
+    ####################################################
+    def click2(self, pos):
+
+        clicked_square = self.board[self.coordinates_to_square(pos[0], pos[1])]  # gets the piece object
+        return clicked_square
+
+    def drag(self, pos, temp_piece, win):
+        filename = temp_piece.get_draw_info()
+        win.blit(self.IMAGES[filename], (pos[0] - SQUARE_SIZE / 2, pos[1] - SQUARE_SIZE / 2))
