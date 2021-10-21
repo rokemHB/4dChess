@@ -34,14 +34,14 @@ class Board:
                 i += 1
 
     def new_game(self, win):
-        self.board[3] = Pawn(3)
-        self.board[4] = Pawn(4)
-        self.board[5] = Pawn(5)
-        self.board[6] = Pawn(6)
-        self.board[7] = Pawn(7)
-        self.board[8] = Pawn(8)
-        self.board[9] = Pawn(9)
-        self.board[10] = Pawn(10)
+        self.board[17] = Pawn(3)
+        self.board[18] = Pawn(4)
+        self.board[19] = Pawn(5)
+        self.board[20] = Pawn(6)
+        self.board[21] = Pawn(7)
+        self.board[22] = Pawn(8)
+        self.board[23] = Pawn(9)
+        self.board[24] = Pawn(10)
         self.load_images()
         self.draw_pieces(win)
 
@@ -55,9 +55,7 @@ class Board:
         i = 0
         for row in range(ROWS):
             for col in range(COLS):
-                print(i)
-                print(self.board[i] is not None)
-                if self.board[i] is not None:
+                if isinstance(self.board[i], Pawn):
                     win.blit(self.IMAGES['bp'], (col * SQUARE_SIZE, row * SQUARE_SIZE))
 
                 i += 1

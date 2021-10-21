@@ -1,6 +1,5 @@
 class Piece:
-    def __init__(self, row, col, player):  # player == north || east || south || west
-        self.row = row
-        self.col = col
+    def __init__(self, squareNr, player):  # player == north || east || south || west
+        self.squareNr = squareNr
         self.player = player
 
