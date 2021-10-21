@@ -1,16 +1,11 @@
 from chess.pieces.piece import Piece
 
 
-class Pawn(Piece):
+class Knight(Piece):
 
     def __init__(self, square_nr, player):
         super().__init__(square_nr, player)
 
     def get_draw_info(self):
-        return self.player + "P"
+        return self.player + "N"
 
-
-
-
-
-# legaler move hängt vom player ab: north player darf nur runter, west player nur nach rechts etc.
