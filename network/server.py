@@ -1,7 +1,6 @@
-import pickle
 import socket
 from _thread import *
-from player import Player
+from network.player import Player
 import pickle
 
 
