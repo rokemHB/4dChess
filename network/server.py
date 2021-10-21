@@ -1,8 +1,7 @@
 import socket
 from _thread import *
-from network.player import Player
 import pickle
-
+from game import Game
 
 server = "192.168.178.30" #"10.51.1.141"  # local address for now
 port = 5555
@@ -22,43 +21,66 @@ print("waiting for connection, server is running")
 
 
 
+connected = set()
+games = {}
+idCount = 0
 
-# TODO: extend to 4 players
-players = [Player(0,0,50,50,(255,0,0)), Player(100,100,50,50,(0,0,255))]
 
 
-def threaded_client(conn, player):
-    conn.send(pickle.dumps(players[player]))
+
+def threaded_client(conn, p, gameId):
+    global idCount
+    conn.send(str.encode(str(p)))  # tell client which player number they are
+
     reply = ""
     while True:
+
         try:
-            data = pickle.loads(conn.recv(2048))
-            players[player] = data
+            data = conn.recv(4096).decode()  # increase bits in case of pickle error
 
-            if not data:
-                print("disconnected")
-                break
-            else:
-                if player == 1:  # TODO: extend to 4 players
-                    reply = players[0]
+            if gameId in games:  # games still running or some client disconnected?
+                game = games[gameId]
+
+                if not data:
+                    break
                 else:
-                    reply = players[1]
+                    if data == "reset":
+                        game.reset()
+                    elif data != "get":
+                        game.play(p, data)  # send move
 
-                print("received: ", data)
-                print("sending: ", reply)
+                    reply = game
+                    conn.sendall(pickle.dumps(reply))
 
-            conn.sendall(pickle.dumps(reply))
-
+            else:
+                break
         except:
             break
 
     print("lost connection")
+
+    try:
+        del games[gameId]
+        print("closing game", gameId)
+    except:
+        pass
+    idCount -= 1
     conn.close()
 
-currentPlayer = 0  # add connecting players
+
 while True:
     conn, addr = s.accept()
     print("connected to: ", addr)
 
-    start_new_thread(threaded_client, (conn, currentPlayer))
-    currentPlayer += 1
+    idCount += 1
+    p = 0
+    gameId = (idCount - 1)//2  # TODO: increase to 4 players for allowing more then one game serverside - might wanna go back to hardcode 4 players for ease
+    if idCount % 2 == 1:
+        games[gameId] = Game(gameId)
+        print("creating a new game...")
+    else:
+        games[gameId].ready = True
+        p = 1
+
+    start_new_thread(threaded_client, (conn, p, gameId))
+
