@@ -10,7 +10,6 @@ from chess.pieces.rook import Rook
 
 
 class Board:
-
     # stores the piece pngs
     IMAGES = {}
 
@@ -41,10 +40,10 @@ class Board:
         self.board = [None] * 196
         self.selected_piece = None  # TODO: Needed?
 
-    '''
-    Draws the squares of the board
-    '''
     def draw_squares(self, win):
+        """
+        Draws the squares of the board
+        """
         win.fill(BLACK)
         i = 0
         for row in range(ROWS):
@@ -61,12 +60,12 @@ class Board:
                                                             SQUARE_SIZE, SQUARE_SIZE))
                 i += 1
 
-    '''
-    Draws numbers to bottom left corner of squares
-    Mainly for testing purposes
-    Might be replaced with classical Letter x Number system
-    '''
     def draw_numbers(self, win, thisfont):
+        """
+        Draws numbers to bottom left corner of squares
+        Mainly for testing purposes
+        Might be replaced with classical Letter x Number system
+        """
         i = 0
         for row in range(ROWS):
             for col in range(COLS):
@@ -74,22 +73,22 @@ class Board:
                 win.blit(number, (col * SQUARE_SIZE + SQUARE_SIZE / 15, row * SQUARE_SIZE + SQUARE_SIZE / 1.13))
                 i += 1
 
-    '''
-    Initiates new game
-    Sets pieces into start position
-    Loads images
-    '''
     def new_game(self, win):
+        """
+        Initiates new game
+        Sets pieces into start position
+        Loads images
+        """
         for piece in self.startPositions:
             self.board[piece.get_square()] = piece
 
         self.load_images()  # make sure this only gets called once!
 
-    '''
-    Loads images to memory
-    Needs absolute path on windows for some reason, on linux relative path is fine
-    '''
     def load_images(self):
+        """
+        Loads images to memory
+        Needs absolute path on windows for some reason, on linux relative path is fine
+        """
         pieces = ['sP', 'sR', 'sN', 'sB', 'sK', 'sQ', 'nP', 'nR', 'nN', 'nB', 'nK', 'nQ',
                   'wP', 'wR', 'wN', 'wB', 'wK', 'wQ', 'eP', 'eR', 'eN', 'eB', 'eK', 'eQ']
         for piece in pieces:
@@ -97,10 +96,10 @@ class Board:
                 pygame.image.load("C:/Users/kemmeri/Git/4dChess/chess/images/" + piece + ".png"),
                 (SQUARE_SIZE, SQUARE_SIZE))
 
-    '''
-    Draws pieces for all squares on the board
-    '''
     def draw_pieces(self, win):
+        """
+        Draws pieces for all squares on the board
+        """
         i = 0
         for row in range(ROWS):
             for col in range(COLS):
@@ -110,60 +109,67 @@ class Board:
 
                 i += 1
 
-    '''
-    Returns the square number for given x and y coordinates
-    '''
     def coordinates_to_square(self, pos):
+        """
+        Returns the square number for given x and y coordinates
+        """
         x_square = pos[0] // SQUARE_SIZE  # integer division
         y_square = pos[1] // SQUARE_SIZE
         return int(x_square + 14 * y_square)
 
-    '''
-    Returns the top left square corner coordinates of a given coordinate
-    '''
     def get_square_coordinates(self, pos):
+        """
+        Returns the top left square corner coordinates of a given coordinate
+        """
         corner_pos = []
         corner_pos[0] = (pos[0] // SQUARE_SIZE) * SQUARE_SIZE
         corner_pos[1] = (pos[1] // SQUARE_SIZE) * SQUARE_SIZE
         return corner_pos
 
-    '''
-    Event for pressing down a mouse button
-    Returns the piece object on the respective square
-    '''
     def click(self, pos):
+        """
+        Event for pressing down a mouse button
+        Returns the piece object on the respective square
+        """
         clicked_square = self.board[self.coordinates_to_square(pos)]  # gets the piece object
         return clicked_square
 
-    '''
-    Event for moving the mouse, only relevant after a mouse button has been clicked
-    Draws the piece centered on the cursor
-    '''
-    def drag(self, pos, temp_piece, win):
-        filename = temp_piece.get_draw_info()
+    def drag(self, pos, win):
+        """
+        Event for moving the mouse, only relevant after a mouse button has been clicked
+        Draws the piece centered on the cursor
+        """
+        filename = self.selected_piece.get_draw_info()
         win.blit(self.IMAGES[filename], (pos[0] - SQUARE_SIZE / 2, pos[1] - SQUARE_SIZE / 2))
 
-    '''
-    Executes a move command, setting new positions and update drawings on board
-    Does not check whether move is legal
-    '''
+
+
+
+
+    ### PRÜFEN OB OLD SQUARE = NEW SQUARE
     def make_move(self, new_pos):
+        """
+        Executes a move command, setting new positions and update drawings on board
+        Does not check whether move is legal
+        """
         if self.selected_piece is not None:
             old_square = self.selected_piece.get_square()
-            self.board[old_square] = None
             new_square = self.coordinates_to_square(new_pos)
-            self.selected_piece.set_square(new_square)
-            self.board[new_square] = self.selected_piece
-            self.selected_piece = None
+
+            if old_square == new_square:
+                return
+            else:
+                self.board[old_square] = None
+                self.selected_piece.set_square(new_square)
+                self.board[new_square] = self.selected_piece
+                self.selected_piece = None
         else:
             print("No piece is selected")
 
-    '''
-    Calculates color of a square given coordinates
-    0 = White, 1 = Black
-    '''
     def get_square_color(self, pos):
+        """
+        Calculates color of a square given coordinates
+        0 = White, 1 = Black
+        """
         square_nr = self.coordinates_to_square(pos)
         return ((square_nr % 14) + (square_nr // 14)) % 2
-
-

@@ -34,9 +34,8 @@ def main():
                 run = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                temp_piece = board.click(pygame.mouse.get_pos())
-                if temp_piece is not None:
-                    board.selected_piece = temp_piece
+                board.selected_piece = board.click(pygame.mouse.get_pos())
+                if board.selected_piece is not None:
                     piece_drag = True
 
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -45,7 +44,7 @@ def main():
 
             elif event.type == pygame.MOUSEMOTION:
                 if piece_drag:
-                    board.drag(pygame.mouse.get_pos(), temp_piece, WIN)
+                    board.drag(pygame.mouse.get_pos(), WIN)
 
             pygame.display.update()
 
