@@ -6,7 +6,6 @@ from game import Game
 server = "192.168.178.30" #"10.51.1.141"  # local address for now
 port = 5555
 
-# AF_INET for ipv4
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 try:
@@ -14,7 +13,7 @@ try:
 except socket.error as e:
     str(e)
 
-s.listen(2)  # TODO: increase to 4
+s.listen(2)
 print("Waiting for a connection, Server Started")
 
 connected = set()
@@ -38,7 +37,7 @@ def threaded_client(conn, p, gameId):
                     break
                 else:
                     if data == "reset":
-                        game.reset_went()
+                        game.resetWent()
                     elif data != "get":
                         game.play(p, data)
 
@@ -65,7 +64,7 @@ while True:
 
     idCount += 1
     p = 0
-    gameId = (idCount - 1)//2  # TODO: increase to 4
+    gameId = (idCount - 1)//2
     if idCount % 2 == 1:
         games[gameId] = Game(gameId)
         print("Creating a new game...")
