@@ -32,10 +32,13 @@ def main():
                 run = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                temp_piece = board.click2(pygame.mouse.get_pos())
+                temp_piece = board.click(pygame.mouse.get_pos())
+                board.selected_piece = temp_piece
                 piece_drag = True
 
             elif event.type == pygame.MOUSEBUTTONUP:
+                # set piece to new square
+                # board.selected_piece = None
                 piece_drag = False
 
             elif event.type == pygame.MOUSEMOTION:
