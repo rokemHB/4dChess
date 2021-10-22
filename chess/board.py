@@ -93,8 +93,8 @@ class Board:
                   'wP', 'wR', 'wN', 'wB', 'wK', 'wQ', 'eP', 'eR', 'eN', 'eB', 'eK', 'eQ']
         for piece in pieces:
             self.IMAGES[piece] = pygame.transform.scale(
-                pygame.image.load("C:/Users/kemmeri/Git/4dChess/chess/images/" + piece + ".png"),
-                (SQUARE_SIZE, SQUARE_SIZE))
+                pygame.image.load("images/" + piece + ".png"),
+                (int(SQUARE_SIZE), int(SQUARE_SIZE)))  # C:/Users/kemmeri/Git/4dChess/chess/
 
     def draw_pieces(self, win):
         """
@@ -122,8 +122,8 @@ class Board:
         Returns the top left square corner coordinates of a given coordinate
         """
         corner_pos = []
-        corner_pos[0] = (pos[0] // SQUARE_SIZE) * SQUARE_SIZE
-        corner_pos[1] = (pos[1] // SQUARE_SIZE) * SQUARE_SIZE
+        corner_pos.append((pos[0] // SQUARE_SIZE) * SQUARE_SIZE)
+        corner_pos.append((pos[1] // SQUARE_SIZE) * SQUARE_SIZE)
         return corner_pos
 
     def click(self, pos):
@@ -142,7 +142,7 @@ class Board:
         filename = self.selected_piece.get_draw_info()
         win.blit(self.IMAGES[filename], (pos[0] - SQUARE_SIZE / 2, pos[1] - SQUARE_SIZE / 2))
 
-    def make_move(self, new_pos):
+    def make_move(self, new_pos, win):
         """
         Executes a move command, setting new positions and update drawings on board
         Does not check whether move is legal
@@ -154,6 +154,23 @@ class Board:
             if old_square == new_square:
                 return
             else:
+
+                # draw first so performance on mouse release is instant
+                win.blit(self.IMAGES[self.selected_piece.get_draw_info()],
+                         self.get_square_coordinates(new_pos))
+
+                old_coordinates = self.get_coordinates_from_square_nr(old_square)
+
+                # determine color of old square
+                if self.get_square_color(old_coordinates) == 1:
+                    color = BLACK
+                else:
+                    color = WHITE
+
+
+
+                pygame.draw.rect(win, color, (old_coordinates[0], old_coordinates[1], SQUARE_SIZE, SQUARE_SIZE))
+
                 self.board[old_square] = None
                 self.selected_piece.set_square(new_square)
                 self.board[new_square] = self.selected_piece
@@ -168,3 +185,9 @@ class Board:
         """
         square_nr = self.coordinates_to_square(pos)
         return ((square_nr % 14) + (square_nr // 14)) % 2
+
+    def get_coordinates_from_square_nr(self, square_nr):
+        res = []
+        res.append((square_nr % 14) * SQUARE_SIZE)
+        res.append((square_nr // 14) * SQUARE_SIZE)
+        return res
