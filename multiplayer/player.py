@@ -1,7 +1,7 @@
 import pygame
 
 
-# mini pygame example to test network stuff
+# mini pygame example to test multiplayer stuff
 class Player():
     def __init__(self, x, y, width, height, color):
         self.x = x
