@@ -13,4 +13,7 @@ class Piece(ABC):
     def get_square(self):
         return self.square_nr
 
+    def set_square(self, new_square):
+        self.square_nr = new_square
+
 

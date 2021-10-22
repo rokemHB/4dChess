@@ -147,14 +147,16 @@ class Board:
     Executes a move command, setting new positions and update drawings on board
     Does not check whether move is legal
     '''
-    def make_move(self):
-
-        # board[old_pos] = None
-
-        # piece(set new pos) = new pos
-
-        # board[new_pos] = piece
-        pass
+    def make_move(self, new_pos):
+        if self.selected_piece is not None:
+            old_square = self.selected_piece.get_square()
+            self.board[old_square] = None
+            new_square = self.coordinates_to_square(new_pos)
+            self.selected_piece.set_square(new_square)
+            self.board[new_square] = self.selected_piece
+            self.selected_piece = None
+        else:
+            print("No piece is selected")
 
     '''
     Calculates color of a square given coordinates

@@ -17,8 +17,10 @@ def main():
 
     board.new_game(WIN)
 
+
     piece_drag = False
     temp_piece = None
+
 
     while run:
         clock.tick(FPS)
@@ -38,8 +40,7 @@ def main():
                     piece_drag = True
 
             elif event.type == pygame.MOUSEBUTTONUP:
-                # set piece to new square
-                # board.selected_piece = None
+                board.make_move(pygame.mouse.get_pos())
                 piece_drag = False
 
             elif event.type == pygame.MOUSEMOTION:
