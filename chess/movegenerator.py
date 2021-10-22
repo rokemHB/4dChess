@@ -7,7 +7,7 @@ from chess.pieces.queen import Queen
 from chess.pieces.rook import Rook
 
 
-def is_legal_move(piece, target_square):
+def legal_moves(piece):
     """
     Determines whether a move is legal. Current position is known to piece, target is parameter
     :return: list of legal square_nr

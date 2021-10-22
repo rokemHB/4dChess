@@ -1,6 +1,7 @@
 import pygame
 
 from chess.constants import *
+from chess.movegenerator import legal_moves
 from chess.pieces.bishop import Bishop
 from chess.pieces.king import King
 from chess.pieces.knight import Knight
@@ -96,6 +97,12 @@ class Board:
                 pygame.image.load("images/" + piece + ".png"),
                 (int(SQUARE_SIZE), int(SQUARE_SIZE)))  # C:/Users/kemmeri/Git/4dChess/chess/
 
+        symbols = ['green_dot', 'grey_dot']
+        for symbol in symbols:
+            self.IMAGES[symbol] = pygame.transform.scale(
+                pygame.image.load("images/" + symbol + ".png"),
+                (int(SQUARE_SIZE/2), int(SQUARE_SIZE/2)))
+
     def draw_pieces(self, win):
         """
         Draws pieces for all squares on the board
@@ -148,33 +155,40 @@ class Board:
         Does not check whether move is legal
         """
         if self.selected_piece is not None:
+
+            move_list = legal_moves(self.selected_piece)
+            self.draw_legal_moves(move_list, win)
+
             old_square = self.selected_piece.get_square()
             new_square = self.coordinates_to_square(new_pos)
 
             if old_square == new_square:
                 return
             else:
+                # check if move is legal
+                if new_square in move_list:
 
-                # draw first so performance on mouse release is instant
-                win.blit(self.IMAGES[self.selected_piece.get_draw_info()],
-                         self.get_square_coordinates(new_pos))
+                    # draw first so performance on mouse release is instant
+                    win.blit(self.IMAGES[self.selected_piece.get_draw_info()],
+                             self.get_square_coordinates(new_pos))
 
-                old_coordinates = self.get_coordinates_from_square_nr(old_square)
+                    old_coordinates = self.get_coordinates_from_square_nr(old_square)
 
-                # determine color of old square
-                if self.get_square_color(old_coordinates) == 1:
-                    color = BLACK
+                    # determine color of old square
+                    if self.get_square_color(old_coordinates) == 1:
+                        color = BLACK
+                    else:
+                        color = WHITE
+
+                    # redraws old square
+                    pygame.draw.rect(win, color, (old_coordinates[0], old_coordinates[1], SQUARE_SIZE, SQUARE_SIZE))
+
+                    self.board[old_square] = None
+                    self.selected_piece.set_square(new_square)
+                    self.board[new_square] = self.selected_piece
+                    self.selected_piece = None
                 else:
-                    color = WHITE
-
-
-
-                pygame.draw.rect(win, color, (old_coordinates[0], old_coordinates[1], SQUARE_SIZE, SQUARE_SIZE))
-
-                self.board[old_square] = None
-                self.selected_piece.set_square(new_square)
-                self.board[new_square] = self.selected_piece
-                self.selected_piece = None
+                    return
         else:
             print("No piece is selected")
 
@@ -191,3 +205,9 @@ class Board:
         res.append((square_nr % 14) * SQUARE_SIZE)
         res.append((square_nr // 14) * SQUARE_SIZE)
         return res
+
+    def draw_legal_moves(self, move_list, win):
+        for mv in move_list:
+            coordinates = self.get_coordinates_from_square_nr(mv)
+            win.blit(self.IMAGES['green_dot'], (coordinates[0] + SQUARE_SIZE/4,
+                                                coordinates[1] + SQUARE_SIZE/4))
