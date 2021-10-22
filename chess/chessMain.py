@@ -1,7 +1,7 @@
 import pygame
 
 from chess.board import Board
-from chess.constants import *  # might wanna specify if more constants get added
+from chess.constants import *  # TODO: might wanna specify if more constants get added
 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('testChess')
@@ -33,8 +33,9 @@ def main():
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 temp_piece = board.click(pygame.mouse.get_pos())
-                board.selected_piece = temp_piece
-                piece_drag = True
+                if temp_piece is not None:
+                    board.selected_piece = temp_piece
+                    piece_drag = True
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 # set piece to new square
@@ -43,7 +44,6 @@ def main():
 
             elif event.type == pygame.MOUSEMOTION:
                 if piece_drag:
-                    # mouse_x, mouse_y = event.pos
                     board.drag(pygame.mouse.get_pos(), temp_piece, WIN)
 
             pygame.display.update()

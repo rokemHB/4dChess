@@ -142,3 +142,26 @@ class Board:
     def drag(self, pos, temp_piece, win):
         filename = temp_piece.get_draw_info()
         win.blit(self.IMAGES[filename], (pos[0] - SQUARE_SIZE / 2, pos[1] - SQUARE_SIZE / 2))
+
+    '''
+    Executes a move command, setting new positions and update drawings on board
+    Does not check whether move is legal
+    '''
+    def make_move(self):
+
+        # board[old_pos] = None
+
+        # piece(set new pos) = new pos
+
+        # board[new_pos] = piece
+        pass
+
+    '''
+    Calculates color of a square given coordinates
+    0 = White, 1 = Black
+    '''
+    def get_square_color(self, pos):
+        square_nr = self.coordinates_to_square(pos)
+        return ((square_nr % 14) + (square_nr // 14)) % 2
+
+
