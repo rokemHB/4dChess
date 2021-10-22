@@ -5,18 +5,22 @@ class Game:
         self.ready = False
         self.id = id
         self.moves = [None, None]
-        self.wins = [0, 0]
+        self.wins = [0,0]
+        self.ties = 0
 
     def get_player_move(self, p):
-        # p must be 0 or 1
+        """
+        :param p: [0,1]
+        :return: Move
+        """
         return self.moves[p]
 
-    def player(self, player, move):
+    def play(self, player, move):
         self.moves[player] = move
         if player == 0:
-            p1Went = True
+            self.p1Went = True
         else:
-            p2Went = True
+            self.p2Went = True
 
     def connected(self):
         return self.ready
@@ -25,13 +29,13 @@ class Game:
         return self.p1Went and self.p2Went
 
     def winner(self):
+
         p1 = self.moves[0].upper()[0]
         p2 = self.moves[1].upper()[0]
 
-        winner = -1  # tie
-
+        winner = -1
         if p1 == "R" and p2 == "S":
-            winner = 0  # p1 wins
+            winner = 0
         elif p1 == "S" and p2 == "R":
             winner = 1
         elif p1 == "P" and p2 == "R":
@@ -45,6 +49,6 @@ class Game:
 
         return winner
 
-    def reset_went(self):
+    def resetWent(self):
         self.p1Went = False
         self.p2Went = False
