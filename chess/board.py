@@ -142,11 +142,6 @@ class Board:
         filename = self.selected_piece.get_draw_info()
         win.blit(self.IMAGES[filename], (pos[0] - SQUARE_SIZE / 2, pos[1] - SQUARE_SIZE / 2))
 
-
-
-
-
-    ### PRÜFEN OB OLD SQUARE = NEW SQUARE
     def make_move(self, new_pos):
         """
         Executes a move command, setting new positions and update drawings on board

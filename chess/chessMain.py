@@ -38,6 +38,8 @@ def main():
                 if board.selected_piece is not None:
                     piece_drag = True
 
+                    ### selected piece lassen wenn nichts gemoved wird und dann mit movement generator die legalen züge auf dem Feld einblenden
+
             elif event.type == pygame.MOUSEBUTTONUP:
                 board.make_move(pygame.mouse.get_pos())
                 piece_drag = False
