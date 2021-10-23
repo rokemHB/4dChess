@@ -21,7 +21,10 @@ def legal_moves(piece, board):
 
     capture = False  # TODO: in case of capture do something
 
-    sqrnr = piece.get_square()
+    if piece is None:
+        return
+    else:
+        sqrnr = piece.get_square()
     if isinstance(piece, Pawn):  # No en passant in 4 player chess
 
         if piece.get_player() == 'n' and is_inside_board(sqrnr + 14):  # check if player is n and still on board

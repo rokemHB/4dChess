@@ -133,12 +133,13 @@ class Board:
         corner_pos.append((pos[1] // SQUARE_SIZE) * SQUARE_SIZE)
         return corner_pos
 
-    def click(self, pos):
+    def click(self, pos, win):
         """
         Event for pressing down a mouse button
         Returns the piece object on the respective square
         """
         clicked_square = self.board[self.coordinates_to_square(pos)]  # gets the piece object
+        self.draw_legal_moves(win)
         return clicked_square
 
     def drag(self, pos, win):
@@ -146,8 +147,11 @@ class Board:
         Event for moving the mouse, only relevant after a mouse button has been clicked
         Draws the piece centered on the cursor
         """
+        self.draw_legal_moves(win)
         filename = self.selected_piece.get_draw_info()
         win.blit(self.IMAGES[filename], (pos[0] - SQUARE_SIZE / 2, pos[1] - SQUARE_SIZE / 2))
+
+
 
     def make_move(self, new_pos, win):
         """
@@ -157,7 +161,7 @@ class Board:
         if self.selected_piece is not None:
 
             move_list = legal_moves(self.selected_piece, self)
-            self.draw_legal_moves(move_list, win)
+            self.draw_legal_moves(win)
 
             old_square = self.selected_piece.get_square()
             new_square = self.coordinates_to_square(new_pos)
@@ -168,6 +172,7 @@ class Board:
                 # check if move is legal
                 if new_square in move_list:
 
+                    """ --> just redraw everything, many conflicts otherwise
                     # draw first so performance on mouse release is instant
                     win.blit(self.IMAGES[self.selected_piece.get_draw_info()],
                              self.get_square_coordinates(new_pos))
@@ -182,11 +187,16 @@ class Board:
 
                     # redraws old square
                     pygame.draw.rect(win, color, (old_coordinates[0], old_coordinates[1], SQUARE_SIZE, SQUARE_SIZE))
+                    """
 
                     self.board[old_square] = None
                     self.selected_piece.set_square(new_square)
                     self.board[new_square] = self.selected_piece
                     self.selected_piece = None
+
+                    self.draw_squares(win)
+                    self.draw_pieces(win)
+
                 else:
                     return
         else:
@@ -206,8 +216,12 @@ class Board:
         res.append((square_nr // 14) * SQUARE_SIZE)
         return res
 
-    def draw_legal_moves(self, move_list, win):
-        for mv in move_list:
-            coordinates = self.get_coordinates_from_square_nr(mv)
-            win.blit(self.IMAGES['green_dot'], (coordinates[0] + SQUARE_SIZE/4,
-                                                coordinates[1] + SQUARE_SIZE/4))
+    def draw_legal_moves(self, win):
+        move_list = legal_moves(self.selected_piece, self)
+        if move_list is None:
+            return
+        else:
+            for mv in move_list:
+                coordinates = self.get_coordinates_from_square_nr(mv)
+                win.blit(self.IMAGES['green_dot'], (coordinates[0] + SQUARE_SIZE/4,
+                                                    coordinates[1] + SQUARE_SIZE/4))

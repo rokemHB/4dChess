@@ -9,32 +9,40 @@ pygame.display.set_caption('testChess')
 pygame.init()
 font = pygame.font.Font("freesansbold.ttf", 9)
 
+clock = pygame.time.Clock()
+
+
+def update_fps():
+    fps = str(int(clock.get_fps()))
+    fps_text = font.render(fps, 1, pygame.Color("coral"))
+    return fps_text
+
 
 def main():
     run = True
-    clock = pygame.time.Clock()
+
     board = Board()
 
     board.new_game(WIN)
 
-
     piece_drag = False
     temp_piece = None
-
 
     while run:
         clock.tick(FPS)
 
         board.draw_squares(WIN)
-        board.draw_numbers(WIN, font)
+        # board.draw_numbers(WIN, font)
         board.draw_pieces(WIN)
+
+        WIN.blit(update_fps(), (10, 0))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                board.selected_piece = board.click(pygame.mouse.get_pos())
+                board.selected_piece = board.click(pygame.mouse.get_pos(), WIN)
                 if board.selected_piece is not None:
                     piece_drag = True
 
@@ -43,8 +51,6 @@ def main():
             elif event.type == pygame.MOUSEBUTTONUP:
                 board.make_move(pygame.mouse.get_pos(), WIN)
                 piece_drag = False
-
-                #board.draw_pieces(WIN)
 
             elif event.type == pygame.MOUSEMOTION:
                 if piece_drag:
