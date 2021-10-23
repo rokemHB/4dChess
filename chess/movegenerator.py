@@ -16,6 +16,8 @@ def legal_moves(piece, board):
     # https://www.chess.com/club/4-player-chess-1 for rules
 
     result = []
+    w_start = [43, 57, 71, 85, 99, 113, 127, 141]
+    e_start = [54, 68, 82, 96, 110, 124, 138, 152]
 
     capture = False  # TODO: in case of capture do something
 
@@ -42,7 +44,7 @@ def legal_moves(piece, board):
 
         if piece.get_player() == 'w' and is_inside_board(sqrnr + 1):
             result.append(sqrnr + 1)
-            if sqrnr in [43, 57, 71, 85, 99, 113, 127, 141]:  # check if start position
+            if sqrnr in w_start:  # check if start position
                 result.append(sqrnr + 2)
             if is_inside_board(sqrnr - 13) and is_occupied_by_enemy(piece, sqrnr - 13, board):
                 result.append(sqrnr - 13)
@@ -51,7 +53,7 @@ def legal_moves(piece, board):
 
         if piece.get_player() == 'e' and is_inside_board(sqrnr - 1):
             result.append(sqrnr - 1)
-            if sqrnr in [54, 68, 82, 96, 110, 124, 138, 152]:  # check if start position
+            if sqrnr in e_start:  # check if start position
                 result.append(sqrnr - 2)
             if is_inside_board(sqrnr + 13) and is_occupied_by_enemy(piece, sqrnr + 13, board):
                 result.append(sqrnr + 13)
@@ -73,7 +75,6 @@ def legal_moves(piece, board):
                     (board.board[sqrnr + ofs] is None or
                      is_occupied_by_enemy(piece, sqrnr + ofs, board)):
                 result.append(sqrnr + ofs)
-
 
     elif isinstance(piece, King):  # TODO: not allowed to walk into check
         offset = [-13, -14, -15, -1, 1, 13, 14, 15]
