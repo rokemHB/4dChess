@@ -61,16 +61,32 @@ def legal_moves(piece, board):
     elif isinstance(piece, Rook):
         offset = [-1, 1, -14, 14]
         result = sliding_piece(offset, sqrnr, piece, board)
+
     elif isinstance(piece, Bishop):
         offset = [-13, 13, -15, 15]
         result = sliding_piece(offset, sqrnr, piece, board)
+
     elif isinstance(piece, Knight):
-        pass
-    elif isinstance(piece, King):
-        pass
+        offset = [-16, -29, -27, -12, 16, 29, 27, 12]
+        for ofs in offset:
+            if is_inside_board(sqrnr + ofs) and \
+                    (board.board[sqrnr + ofs] is None or
+                     is_occupied_by_enemy(piece, sqrnr + ofs, board)):
+                result.append(sqrnr + ofs)
+
+
+    elif isinstance(piece, King):  # TODO: not allowed to walk into check
+        offset = [-13, -14, -15, -1, 1, 13, 14, 15]
+        for ofs in offset:
+            if is_inside_board(sqrnr + ofs) and \
+                    (board.board[sqrnr + ofs] is None or
+                     is_occupied_by_enemy(piece, sqrnr + ofs, board)):
+                result.append(sqrnr + ofs)
+
     elif isinstance(piece, Queen):
         offset = [-13, 13, -15, 15, -1, 1, -14, 14]
         result = sliding_piece(offset, sqrnr, piece, board)
+
     return result
 
 
@@ -91,7 +107,8 @@ def sliding_piece(offset, sqrnr, piece, board):
     for ofs in offset:
         temp_sqrnr = sqrnr
         while is_inside_board(temp_sqrnr + ofs) and \
-                (board.board[temp_sqrnr + ofs] is None or is_occupied_by_enemy(piece, temp_sqrnr + ofs, board)):
+                (board.board[temp_sqrnr + ofs] is None or
+                 is_occupied_by_enemy(piece, temp_sqrnr + ofs, board)):
             result.append(temp_sqrnr + ofs)
             if is_occupied_by_enemy(piece, temp_sqrnr + ofs, board):
                 capture = True  # TODO: probably give target square parameter?!
