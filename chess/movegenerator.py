@@ -7,43 +7,66 @@ from chess.pieces.queen import Queen
 from chess.pieces.rook import Rook
 
 
-def legal_moves(piece):
+def legal_moves(piece, board):
     """
     Determines whether a move is legal. Current position is known to piece, target is parameter
     :return: list of legal square_nr
     """
 
-    # TARGET EVEN NECESSARY?? MAYBE JUST GIVE LIST OF LEGAL MOVES AND TEST IF TARGET %in% LIST
+    # https://www.chess.com/club/4-player-chess-1 for rules
 
     result = []
 
+    capture = False  # TODO: in case of capture do something
+
     sqrnr = piece.get_square()
-    if isinstance(piece, Pawn):
+    if isinstance(piece, Pawn):  # No en passant in 4 player chess
         if piece.get_player() == 'n' and is_inside_board(sqrnr + 14):  # check if player is n and still on board
             result.append(sqrnr + 14)
             if sqrnr < 25:  # check if start position
                 result.append(sqrnr + 28)
-            if is_inside_board(sqrnr + 13) and is_occupied_by_enemy(sqrnr + 13):
+            if is_inside_board(sqrnr + 13) and is_occupied_by_enemy(piece, sqrnr + 13, board):
                 result.append(sqrnr + 13)
-            if is_inside_board(sqrnr + 15) and is_occupied_by_enemy(sqrnr + 15):
+            if is_inside_board(sqrnr + 15) and is_occupied_by_enemy(piece, sqrnr + 15, board):
                 result.append(sqrnr + 15)
 
-
     elif isinstance(piece, Rook):
-        pass
-    elif isinstance(piece, Knight):
-        pass
+        offset = [-1, 1, -14, 14]
+        result = sliding_piece(offset, sqrnr, piece, board)
     elif isinstance(piece, Bishop):
+        offset = [-13, 13, -15, 15]
+        result = sliding_piece(offset, sqrnr, piece, board)
+    elif isinstance(piece, Knight):
         pass
     elif isinstance(piece, King):
         pass
     elif isinstance(piece, Queen):
-        pass
+        offset = [-13, 13, -15, 15, -1, 1, -14, 14]
+        result = sliding_piece(offset, sqrnr, piece, board)
     return result
 
 
-def is_occupied_by_enemy(square_nr):
-    pass
+def is_occupied_by_enemy(piece, square_nr, board):
+    if board.board[square_nr] is None:
+        return False
+    else:
+        return piece.get_player() != board.board[square_nr].get_player()
+
 
 def is_inside_board(square_nr):
     return 2 < square_nr < 193 and square_nr not in DEAD_SQUARES
+
+
+def sliding_piece(offset, sqrnr, piece, board):
+    result = []
+
+    for ofs in offset:
+        temp_sqrnr = sqrnr
+        while is_inside_board(temp_sqrnr + ofs) and \
+                (board.board[temp_sqrnr + ofs] is None or is_occupied_by_enemy(piece, temp_sqrnr + ofs, board)):
+            result.append(temp_sqrnr + ofs)
+            if is_occupied_by_enemy(piece, temp_sqrnr + ofs, board):
+                capture = True  # TODO: probably give target square parameter?!
+                break
+            temp_sqrnr += ofs
+    return result

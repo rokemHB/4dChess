@@ -156,7 +156,7 @@ class Board:
         """
         if self.selected_piece is not None:
 
-            move_list = legal_moves(self.selected_piece)
+            move_list = legal_moves(self.selected_piece, self)
             self.draw_legal_moves(move_list, win)
 
             old_square = self.selected_piece.get_square()
