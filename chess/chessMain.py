@@ -55,6 +55,8 @@ def main():
             elif event.type == pygame.MOUSEMOTION:
                 if piece_drag:
                     board.drag(pygame.mouse.get_pos(), WIN)
+                elif board.selected_piece is not None:
+                    board.draw_legal_moves(WIN)
 
             pygame.display.update()
 
