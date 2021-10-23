@@ -25,7 +25,8 @@ def legal_moves(piece, board):
     if isinstance(piece, Pawn):  # No en passant in 4 player chess
 
         if piece.get_player() == 'n' and is_inside_board(sqrnr + 14):  # check if player is n and still on board
-            result.append(sqrnr + 14)
+            if not is_occupied_by_enemy(piece, sqrnr + 14, board):
+                result.append(sqrnr + 14)
             if sqrnr < 25:  # check if start position
                 result.append(sqrnr + 28)
             if is_inside_board(sqrnr + 13) and is_occupied_by_enemy(piece, sqrnr + 13, board):
@@ -34,7 +35,8 @@ def legal_moves(piece, board):
                 result.append(sqrnr + 15)
 
         if piece.get_player() == 's' and is_inside_board(sqrnr - 14):
-            result.append(sqrnr - 14)
+            if not is_occupied_by_enemy(piece, sqrnr - 14, board):
+                result.append(sqrnr - 14)
             if sqrnr > 170:  # check if start position
                 result.append(sqrnr - 28)
             if is_inside_board(sqrnr - 13) and is_occupied_by_enemy(piece, sqrnr - 13, board):
@@ -43,7 +45,8 @@ def legal_moves(piece, board):
                 result.append(sqrnr - 15)
 
         if piece.get_player() == 'w' and is_inside_board(sqrnr + 1):
-            result.append(sqrnr + 1)
+            if not is_occupied_by_enemy(piece, sqrnr + 1, board):
+                result.append(sqrnr + 1)
             if sqrnr in w_start:  # check if start position
                 result.append(sqrnr + 2)
             if is_inside_board(sqrnr - 13) and is_occupied_by_enemy(piece, sqrnr - 13, board):
@@ -52,7 +55,8 @@ def legal_moves(piece, board):
                 result.append(sqrnr + 15)
 
         if piece.get_player() == 'e' and is_inside_board(sqrnr - 1):
-            result.append(sqrnr - 1)
+            if not is_occupied_by_enemy(piece, sqrnr - 1, board):
+                result.append(sqrnr - 1)
             if sqrnr in e_start:  # check if start position
                 result.append(sqrnr - 2)
             if is_inside_board(sqrnr + 13) and is_occupied_by_enemy(piece, sqrnr + 13, board):

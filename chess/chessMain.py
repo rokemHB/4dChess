@@ -43,6 +43,7 @@ def main():
             elif event.type == pygame.MOUSEBUTTONUP:
                 board.make_move(pygame.mouse.get_pos(), WIN)
                 piece_drag = False
+
                 #board.draw_pieces(WIN)
 
             elif event.type == pygame.MOUSEMOTION:
