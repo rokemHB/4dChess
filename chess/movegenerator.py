@@ -21,6 +21,7 @@ def legal_moves(piece, board):
 
     sqrnr = piece.get_square()
     if isinstance(piece, Pawn):  # No en passant in 4 player chess
+
         if piece.get_player() == 'n' and is_inside_board(sqrnr + 14):  # check if player is n and still on board
             result.append(sqrnr + 14)
             if sqrnr < 25:  # check if start position
@@ -29,6 +30,33 @@ def legal_moves(piece, board):
                 result.append(sqrnr + 13)
             if is_inside_board(sqrnr + 15) and is_occupied_by_enemy(piece, sqrnr + 15, board):
                 result.append(sqrnr + 15)
+
+        if piece.get_player() == 's' and is_inside_board(sqrnr - 14):
+            result.append(sqrnr - 14)
+            if sqrnr > 170:  # check if start position
+                result.append(sqrnr - 28)
+            if is_inside_board(sqrnr - 13) and is_occupied_by_enemy(piece, sqrnr - 13, board):
+                result.append(sqrnr - 13)
+            if is_inside_board(sqrnr - 15) and is_occupied_by_enemy(piece, sqrnr - 15, board):
+                result.append(sqrnr - 15)
+
+        if piece.get_player() == 'w' and is_inside_board(sqrnr + 1):
+            result.append(sqrnr + 1)
+            if sqrnr in [43, 57, 71, 85, 99, 113, 127, 141]:  # check if start position
+                result.append(sqrnr + 2)
+            if is_inside_board(sqrnr - 13) and is_occupied_by_enemy(piece, sqrnr - 13, board):
+                result.append(sqrnr - 13)
+            if is_inside_board(sqrnr + 15) and is_occupied_by_enemy(piece, sqrnr + 15, board):
+                result.append(sqrnr + 15)
+
+        if piece.get_player() == 'e' and is_inside_board(sqrnr - 1):
+            result.append(sqrnr - 1)
+            if sqrnr in [54, 68, 82, 96, 110, 124, 138, 152]:  # check if start position
+                result.append(sqrnr - 2)
+            if is_inside_board(sqrnr + 13) and is_occupied_by_enemy(piece, sqrnr + 13, board):
+                result.append(sqrnr + 13)
+            if is_inside_board(sqrnr - 15) and is_occupied_by_enemy(piece, sqrnr - 15, board):
+                result.append(sqrnr - 15)
 
     elif isinstance(piece, Rook):
         offset = [-1, 1, -14, 14]
