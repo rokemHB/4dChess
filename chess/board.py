@@ -158,6 +158,7 @@ class Board:
         Executes a move command, setting new positions and update drawings on board
         Does not check whether move is legal
         """
+        # TODO: Make Pawn to Queen when walked to opposite side of the board
         if self.selected_piece is not None:
 
             move_list = legal_moves(self.selected_piece, self)
@@ -191,11 +192,24 @@ class Board:
 
                     self.board[old_square] = None
                     self.selected_piece.set_square(new_square)
+
+                    if isinstance(self.selected_piece, Pawn):  # make queen when pawn at opposite end of board
+                        if self.selected_piece.get_player() == 'n' and new_square > 184:
+                            self.selected_piece = Queen(new_square, 'n')
+                        if self.selected_piece.get_player() == 's' and new_square < 11:
+                            self.selected_piece = Queen(new_square, 's')
+                        if self.selected_piece.get_player() == 'w' and new_square in [55, 69, 83, 97, 111, 125, 139,
+                                                                                      153]:
+                            self.selected_piece = Queen(new_square, 'w')
+                        if self.selected_piece.get_player() == 'e' and new_square in [42, 56, 70, 84, 98, 112, 126, 140]:
+                            self.selected_piece = Queen(new_square, 'e')
+
                     self.board[new_square] = self.selected_piece
                     self.selected_piece = None
 
                     self.draw_squares(win)
                     self.draw_pieces(win)
+
 
                 else:
                     return
