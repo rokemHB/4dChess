@@ -7,17 +7,30 @@ from chess.pieces.queen import Queen
 from chess.pieces.rook import Rook
 
 
+n = -14
+ne = -13
+e = 1
+se = 15
+s = 14
+sw = 13
+w = -1
+nw = -15
+
+directions = [n, ne, e, se, s, sw, w, nw]
+
+w_start = [43, 57, 71, 85, 99, 113, 127, 141]
+e_start = [54, 68, 82, 96, 110, 124, 138, 152]
+
+
 def legal_moves(piece, board):
     """
-    Determines whether a move is legal. Current position is known to piece, target is parameter
+    Determines whether a move is legal. Current position is known to piece
     :return: list of legal square_nr
     """
 
     # https://www.chess.com/club/4-player-chess-1 for rules
 
     result = []
-    w_start = [43, 57, 71, 85, 99, 113, 127, 141]
-    e_start = [54, 68, 82, 96, 110, 124, 138, 152]
 
     capture = False  # TODO: in case of capture do something
 
@@ -27,45 +40,30 @@ def legal_moves(piece, board):
         sqrnr = piece.get_square()
     if isinstance(piece, Pawn):  # No en passant in 4 player chess
 
-        if piece.get_player() == 'n' and is_inside_board(sqrnr + 14):  # check if player is n and still on board
-            if not is_occupied_by_enemy(piece, sqrnr + 14, board):
-                result.append(sqrnr + 14)
-            if sqrnr < 25:  # check if start position
-                result.append(sqrnr + 28)
-            if is_inside_board(sqrnr + 13) and is_occupied_by_enemy(piece, sqrnr + 13, board):
-                result.append(sqrnr + 13)
-            if is_inside_board(sqrnr + 15) and is_occupied_by_enemy(piece, sqrnr + 15, board):
-                result.append(sqrnr + 15)
+        if piece.get_player() == 'n':
+            player_direction = 4
+        elif piece.get_player() == 's':
+            player_direction = 0
+        elif piece.get_player() == 'w':
+            player_direction = 2
+        else:
+            player_direction = 6
 
-        if piece.get_player() == 's' and is_inside_board(sqrnr - 14):
-            if not is_occupied_by_enemy(piece, sqrnr - 14, board):
-                result.append(sqrnr - 14)
-            if sqrnr > 170:  # check if start position
-                result.append(sqrnr - 28)
-            if is_inside_board(sqrnr - 13) and is_occupied_by_enemy(piece, sqrnr - 13, board):
-                result.append(sqrnr - 13)
-            if is_inside_board(sqrnr - 15) and is_occupied_by_enemy(piece, sqrnr - 15, board):
-                result.append(sqrnr - 15)
-
-        if piece.get_player() == 'w' and is_inside_board(sqrnr + 1):
-            if not is_occupied_by_enemy(piece, sqrnr + 1, board):
-                result.append(sqrnr + 1)
-            if sqrnr in w_start:  # check if start position
-                result.append(sqrnr + 2)
-            if is_inside_board(sqrnr - 13) and is_occupied_by_enemy(piece, sqrnr - 13, board):
-                result.append(sqrnr - 13)
-            if is_inside_board(sqrnr + 15) and is_occupied_by_enemy(piece, sqrnr + 15, board):
-                result.append(sqrnr + 15)
-
-        if piece.get_player() == 'e' and is_inside_board(sqrnr - 1):
-            if not is_occupied_by_enemy(piece, sqrnr - 1, board):
-                result.append(sqrnr - 1)
-            if sqrnr in e_start:  # check if start position
-                result.append(sqrnr - 2)
-            if is_inside_board(sqrnr + 13) and is_occupied_by_enemy(piece, sqrnr + 13, board):
-                result.append(sqrnr + 13)
-            if is_inside_board(sqrnr - 15) and is_occupied_by_enemy(piece, sqrnr - 15, board):
-                result.append(sqrnr - 15)
+        if not is_inside_board(sqrnr + directions[player_direction]):
+            return result
+        if not is_occupied_by_enemy(piece, sqrnr + directions[player_direction], board):
+            result.append(sqrnr + directions[player_direction])
+            if (player_direction == 4 and sqrnr < 25) or \
+                    (player_direction == 0 and sqrnr > 170) or \
+                    (player_direction == 2 and sqrnr in w_start) or \
+                    (player_direction == 6 and sqrnr in e_start):
+                result.append(sqrnr + 2 * directions[player_direction])
+        if is_inside_board(sqrnr + directions[(player_direction - 1) % 8]) and \
+                is_occupied_by_enemy(piece, sqrnr + directions[(player_direction - 1) % 8], board):
+            result.append(sqrnr + directions[(player_direction - 1) % 8])
+        if is_inside_board(sqrnr + directions[(player_direction + 1) % 8]) and \
+                is_occupied_by_enemy(piece, sqrnr + directions[(player_direction + 1) % 8], board):
+            result.append(sqrnr + directions[(player_direction + 1) % 8])
 
     elif isinstance(piece, Rook):
         offset = [-1, 1, -14, 14]
