@@ -7,6 +7,7 @@ from chess.pieces.queen import Queen
 from chess.pieces.rook import Rook
 
 
+# position offsets for north, northeast ...
 n = -14
 ne = -13
 e = 1
@@ -15,9 +16,9 @@ s = 14
 sw = 13
 w = -1
 nw = -15
-
 directions = [n, ne, e, se, s, sw, w, nw]
 
+# start locations for players w and e
 w_start = [43, 57, 71, 85, 99, 113, 127, 141]
 e_start = [54, 68, 82, 96, 110, 124, 138, 152]
 
@@ -81,6 +82,8 @@ def legal_moves(piece, board):
                      is_occupied_by_enemy(piece, sqrnr + ofs, board)):
                 result.append(sqrnr + ofs)
 
+
+    # TODO: SET KING_X POSITION IN BOARD.KING_N etc
     elif isinstance(piece, King):  # TODO: not allowed to walk into check
         offset = [-13, -14, -15, -1, 1, 13, 14, 15]
         for ofs in offset:
@@ -121,3 +124,6 @@ def sliding_piece(offset, sqrnr, piece, board):
                 break
             temp_sqrnr += ofs
     return result
+
+def check_checker(piece, board):
+    pass

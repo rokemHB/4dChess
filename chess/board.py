@@ -37,6 +37,13 @@ class Board:
         Bishop(83, 'e'), Bishop(125, 'e'), King(111, 'e'), Queen(97, 'e')
     ]
 
+    # safe king positions (square_nr) to check for check
+    king_n = 6
+    king_e = 111
+    king_s = 189
+    king_w = 84
+    king_pos = {'n': 6, 'e': 111, 's': 189, 'w': 84}
+
     def __init__(self):
         self.board = [None] * 196
         self.selected_piece = None  # TODO: Needed?
@@ -81,27 +88,34 @@ class Board:
         Loads images
         """
         for piece in self.startPositions:
-            self.board[piece.get_square()] = piece
+            self.set_piece(piece.get_square(), piece)
 
         self.load_images()  # make sure this only gets called once!
 
-    def load_images(self):
+    def set_piece(self, square_nr, piece):
+        self.board[square_nr] = piece
+
+    def get_piece(self, square_nr):
+        return self.board[square_nr]
+
+    def load_images(self, path="images/"):
         """
         Loads images to memory
         Needs absolute path on windows for some reason, on linux relative path is fine
+        path given as parameter so test class in different package can also use it ...
         """
         pieces = ['sP', 'sR', 'sN', 'sB', 'sK', 'sQ', 'nP', 'nR', 'nN', 'nB', 'nK', 'nQ',
                   'wP', 'wR', 'wN', 'wB', 'wK', 'wQ', 'eP', 'eR', 'eN', 'eB', 'eK', 'eQ']
         for piece in pieces:
             self.IMAGES[piece] = pygame.transform.scale(
-                pygame.image.load("images/" + piece + ".png"),
+                pygame.image.load(path + piece + ".png"),
                 (int(SQUARE_SIZE), int(SQUARE_SIZE)))  # C:/Users/kemmeri/Git/4dChess/chess/
 
         symbols = ['green_dot', 'grey_dot']
         for symbol in symbols:
             self.IMAGES[symbol] = pygame.transform.scale(
-                pygame.image.load("images/" + symbol + ".png"),
-                (int(SQUARE_SIZE/2), int(SQUARE_SIZE/2)))
+                pygame.image.load(path + symbol + ".png"),
+                (int(SQUARE_SIZE / 2), int(SQUARE_SIZE / 2)))
 
     def draw_pieces(self, win):
         """
@@ -151,8 +165,6 @@ class Board:
         filename = self.selected_piece.get_draw_info()
         win.blit(self.IMAGES[filename], (pos[0] - SQUARE_SIZE / 2, pos[1] - SQUARE_SIZE / 2))
 
-
-
     def make_move(self, new_pos, win):
         """
         Executes a move command, setting new positions and update drawings on board
@@ -173,23 +185,6 @@ class Board:
                 # check if move is legal
                 if new_square in move_list:
 
-                    """ --> just redraw everything, many conflicts otherwise
-                    # draw first so performance on mouse release is instant
-                    win.blit(self.IMAGES[self.selected_piece.get_draw_info()],
-                             self.get_square_coordinates(new_pos))
-
-                    old_coordinates = self.get_coordinates_from_square_nr(old_square)
-
-                    # determine color of old square
-                    if self.get_square_color(old_coordinates) == 1:
-                        color = BLACK
-                    else:
-                        color = WHITE
-
-                    # redraws old square
-                    pygame.draw.rect(win, color, (old_coordinates[0], old_coordinates[1], SQUARE_SIZE, SQUARE_SIZE))
-                    """
-
                     self.board[old_square] = None
                     self.selected_piece.set_square(new_square)
 
@@ -201,8 +196,13 @@ class Board:
                         if self.selected_piece.get_player() == 'w' and new_square in [55, 69, 83, 97, 111, 125, 139,
                                                                                       153]:
                             self.selected_piece = Queen(new_square, 'w')
-                        if self.selected_piece.get_player() == 'e' and new_square in [42, 56, 70, 84, 98, 112, 126, 140]:
+                        if self.selected_piece.get_player() == 'e' and new_square in [42, 56, 70, 84, 98, 112, 126,
+                                                                                      140]:
                             self.selected_piece = Queen(new_square, 'e')
+
+                    # TODO: need to make sure that own movement does not put me into check
+                    elif isinstance(self.selected_piece, King):
+                        pass
 
                     self.board[new_square] = self.selected_piece
                     self.selected_piece = None
@@ -237,5 +237,6 @@ class Board:
         else:
             for mv in move_list:
                 coordinates = self.get_coordinates_from_square_nr(mv)
-                win.blit(self.IMAGES['green_dot'], (coordinates[0] + SQUARE_SIZE/4,
-                                                    coordinates[1] + SQUARE_SIZE/4))
+                win.blit(self.IMAGES['green_dot'],
+                         (int(coordinates[0] + SQUARE_SIZE / 4),  # TODO: replace green by grey dot when not ur turn
+                          int(coordinates[1] + SQUARE_SIZE / 4)))
