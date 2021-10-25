@@ -42,7 +42,7 @@ def main():
                 run = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                board.selected_piece = board.click(pygame.mouse.get_pos(), WIN)
+                board.click(pygame.mouse.get_pos(), WIN)
                 if board.selected_piece is not None:
                     piece_drag = True
 

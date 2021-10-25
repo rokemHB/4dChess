@@ -152,9 +152,9 @@ class Board:
         Event for pressing down a mouse button
         Returns the piece object on the respective square
         """
-        clicked_square = self.board[self.coordinates_to_square(pos)]  # gets the piece object
+        self.selected_piece = self.board[self.coordinates_to_square(pos)]
         self.draw_legal_moves(win)
-        return clicked_square
+
 
     def drag(self, pos, win):
         """
