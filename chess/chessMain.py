@@ -7,14 +7,14 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('testChess')
 
 pygame.init()
-font = pygame.font.Font("freesansbold.ttf", 9)
+font = pygame.font.Font("freesansbold.ttf", 10)
 
 clock = pygame.time.Clock()
 
 
 def update_fps():
     fps = str(int(clock.get_fps()))
-    fps_text = font.render(fps, 1, pygame.Color("coral"))
+    fps_text = font.render(fps, 1, pygame.Color("green"))
     return fps_text
 
 
@@ -25,8 +25,12 @@ def main():
 
     board.new_game(WIN)
 
+    # whether piece should be drawn on curser position
     piece_drag = False
-    temp_piece = None
+
+    # keep track of whose turn it is
+    players = ['n', 'e', 's', 'w']
+    currentPlayer = 0
 
     while run:
         clock.tick(FPS)
@@ -35,21 +39,21 @@ def main():
         # board.draw_numbers(WIN, font)
         board.draw_pieces(WIN)
 
-        WIN.blit(update_fps(), (10, 0))
+        WIN.blit(update_fps(), (WIDTH - 20, 0))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                board.click(pygame.mouse.get_pos(), WIN)
-                if board.selected_piece is not None:
+                if board.click(pygame.mouse.get_pos(), players[currentPlayer], WIN):
                     piece_drag = True
 
                     ### selected piece lassen wenn nichts gemoved wird und dann mit movement generator die legalen züge auf dem Feld einblenden
 
             elif event.type == pygame.MOUSEBUTTONUP:
-                board.make_move(pygame.mouse.get_pos(), WIN)
+                if board.make_move(pygame.mouse.get_pos(), WIN):
+                    currentPlayer = (currentPlayer + 1) % 4
                 piece_drag = False
 
             elif event.type == pygame.MOUSEMOTION:

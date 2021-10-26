@@ -34,4 +34,14 @@ class TestPieces(TestCase):
         self.board.make_move(self.board.get_coordinates_from_square_nr(119), self.WIN)
         self.assertFalse(self.board.get_piece(119), self.testPawn)
 
+    def test_king_updates_position_internally(self):
+        self.board.set_piece(3, King(3, 'n'))
+        self.board.selected_piece = self.board.get_piece(3)
+        self.board.king_pos['n'] = 3
+
+        self.board.make_move(self.board.get_coordinates_from_square_nr(17), self.WIN)
+
+        self.assertTrue(self.board.king_pos.get('n'), 4)
+
+
 

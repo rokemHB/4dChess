@@ -1,3 +1,5 @@
+import copy
+
 from chess.constants import DEAD_SQUARES
 from chess.pieces.bishop import Bishop
 from chess.pieces.king import King
@@ -125,5 +127,14 @@ def sliding_piece(offset, sqrnr, piece, board):
             temp_sqrnr += ofs
     return result
 
-def check_checker(piece, board):
-    pass
+def check_checker(player, board):
+    test_board = copy.deepcopy(board)
+    pos = board.king_pos.get(player)
+
+    # set new pieces to position where King is for respective player
+    test_board[pos] = Queen(pos, player)
+    result = legal_moves(test_board[pos], test_board)
+
+    for res in result:
+        if isinstance(test_board[res], Queen) and test_board[pos].get_player() == player:
+            return True

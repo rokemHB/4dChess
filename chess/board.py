@@ -138,7 +138,7 @@ class Board:
         y_square = pos[1] // SQUARE_SIZE
         return int(x_square + 14 * y_square)
 
-    def get_square_coordinates(self, pos):
+    def square_to_coordinates(self, pos):
         """
         Returns the top left square corner coordinates of a given coordinate
         """
@@ -147,14 +147,20 @@ class Board:
         corner_pos.append((pos[1] // SQUARE_SIZE) * SQUARE_SIZE)
         return corner_pos
 
-    def click(self, pos, win):
+    def click(self, pos, player, win):
         """
         Event for pressing down a mouse button
         Returns the piece object on the respective square
         """
-        self.selected_piece = self.board[self.coordinates_to_square(pos)]
-        self.draw_legal_moves(win)
-
+        coor = self.coordinates_to_square(pos)
+        if self.board[coor] is None:
+            return False
+        elif self.board[coor].get_player() == player:
+            self.selected_piece = self.board[coor]
+            self.draw_legal_moves(win)
+            return True
+        else:
+            return False
 
     def drag(self, pos, win):
         """
@@ -180,7 +186,7 @@ class Board:
             new_square = self.coordinates_to_square(new_pos)
 
             if old_square == new_square:
-                return
+                return False
             else:
                 # check if move is legal
                 if new_square in move_list:
@@ -202,7 +208,7 @@ class Board:
 
                     # TODO: need to make sure that own movement does not put me into check
                     elif isinstance(self.selected_piece, King):
-                        pass
+                        self.king_pos[self.selected_piece.get_player()] = new_pos
 
                     self.board[new_square] = self.selected_piece
                     self.selected_piece = None
@@ -210,9 +216,9 @@ class Board:
                     self.draw_squares(win)
                     self.draw_pieces(win)
 
-
+                    return True
                 else:
-                    return
+                    return False
         else:
             print("No piece is selected")
 
@@ -225,12 +231,18 @@ class Board:
         return ((square_nr % 14) + (square_nr // 14)) % 2
 
     def get_coordinates_from_square_nr(self, square_nr):
+        """
+        calculates top left corner coordinates for a given square number
+        """
         res = []
         res.append((square_nr % 14) * SQUARE_SIZE)
         res.append((square_nr // 14) * SQUARE_SIZE)
         return res
 
     def draw_legal_moves(self, win):
+        """
+        draws circles to the board for all legal moves
+        """
         move_list = legal_moves(self.selected_piece, self)
         if move_list is None:
             return
