@@ -117,8 +117,6 @@ class Board:
         y_square = pos[1] // SQUARE_SIZE
         return int(x_square + 14 * y_square)
 
-
-
     def new_game(self, win):
         """
         Initiates new game
@@ -229,7 +227,7 @@ class Board:
 
                     # TODO: need to make sure that own movement does not put me into check
                     elif isinstance(self.selected_piece, King):
-                        self.king_pos[self.selected_piece.get_player()] = new_pos
+                        self.king_pos[self.selected_piece.get_player()] = self.coordinates_to_square(new_pos)
 
                     self.board[new_square] = self.selected_piece
                     self.selected_piece = None
