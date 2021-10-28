@@ -5,7 +5,7 @@ from chess.constants import *  # TODO: might wanna specify if more constants get
 
 # -5 to kill little bar due to rounding errors, take less when scaling down window size
 WIN = pygame.display.set_mode((WIDTH-5, HEIGHT-5))
-pygame.display.set_caption('testChess')
+pygame.display.set_caption('4dChess')
 
 pygame.init()
 font = pygame.font.Font("freesansbold.ttf", 10)
