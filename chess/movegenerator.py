@@ -20,7 +20,7 @@ w = -1
 nw = -15
 directions = [n, ne, e, se, s, sw, w, nw]
 
-# start locations for players w and e
+# start locations pawns of players w and e
 w_start = [43, 57, 71, 85, 99, 113, 127, 141]
 e_start = [54, 68, 82, 96, 110, 124, 138, 152]
 
@@ -126,6 +126,9 @@ def legal_moves(piece, board):
 
 
 def is_occupied_by_enemy(piece, square_nr, board):
+    """
+    Returns true when a given square is occupied by an enemy of a given player
+    """
     if board.board[square_nr] is None:
         return False
     else:
@@ -133,10 +136,21 @@ def is_occupied_by_enemy(piece, square_nr, board):
 
 
 def is_inside_board(square_nr):
+    """
+    checks whether a given square number is within board limits
+    """
     return 2 < square_nr < 193 and square_nr not in DEAD_SQUARES
 
 
 def sliding_piece(offset, sqrnr, piece, board):
+    """
+    Takes care of the logic for all sliding pieces
+    :param offset: directions to check, rook vs bishop vs both
+    :param sqrnr: square number to start from
+    :param piece: piece for which evaluation shell be done
+    :param board: board on which respective game takes place
+    :return: int array of square numbers indicating legal moves to go for given piece
+    """
     result = []
 
     for ofs in offset:
@@ -159,6 +173,12 @@ def sliding_piece(offset, sqrnr, piece, board):
 
 
 def check_checker(player, board):
+    """
+    Test whether a player is checked. Looks up king position in board.king_pos dict.
+    :param player: player for which the check should be checked
+    :param board: board of the given game
+    :return: True if player is in check
+    """
     test_board = copy.deepcopy(board)
     pos = test_board.king_pos.get(player)
 
@@ -201,7 +221,5 @@ def check_checker(player, board):
 
         if isinstance(test_board.get_piece(sqrnr + dir), King) and test_board.get_piece(sqrnr + dir).get_player() != player:
             return True
-
-
 
     return False
