@@ -1,6 +1,6 @@
 import copy
 
-from chess.constants import DEAD_SQUARES
+from chess.constants import DEAD_SQUARES, SQUARE_SIZE
 from chess.pieces.bishop import Bishop
 from chess.pieces.king import King
 from chess.pieces.knight import Knight
@@ -79,20 +79,34 @@ def legal_moves(piece, board):
     elif isinstance(piece, Knight):
         offset = [-16, -29, -27, -12, 16, 29, 27, 12]
         for ofs in offset:
+
+            # make sure we can not jump from left to right side by comparing x coordinates
+            if abs(board.get_coordinates_from_square_nr(sqrnr)[0] -
+                   board.get_coordinates_from_square_nr(sqrnr + ofs)[0]) > (2 * SQUARE_SIZE):
+                continue
+
             if is_inside_board(sqrnr + ofs) and \
                     (board.board[sqrnr + ofs] is None or
                      is_occupied_by_enemy(piece, sqrnr + ofs, board)):
                 result.append(sqrnr + ofs)
 
-
-    # TODO: SET KING_X POSITION IN BOARD.KING_N etc
-    elif isinstance(piece, King):  # TODO: not allowed to walk into check
+    elif isinstance(piece, King):  # TODO: not allowed to walk into check -> use check_checker
         offset = [-13, -14, -15, -1, 1, 13, 14, 15]
         for ofs in offset:
             if is_inside_board(sqrnr + ofs) and \
                     (board.board[sqrnr + ofs] is None or
                      is_occupied_by_enemy(piece, sqrnr + ofs, board)):
-                result.append(sqrnr + ofs)
+
+                # make sure king does not walk into check
+                test_board = copy.deepcopy(board)  # TODO: too many copies .... performace prolly bad
+                new_pos = piece.get_square() + ofs
+                player = piece.get_player()
+                test_board.set_piece(new_pos, King(new_pos, player))
+                test_board.set_piece(piece.get_square(), None)
+                test_board.king_pos[player] = new_pos
+
+                #if not check_checker(piece.get_player(), test_board):
+                 #   result.append(sqrnr + ofs)
 
     elif isinstance(piece, Queen):
         offset = [-13, 13, -15, 15, -1, 1, -14, 14]
@@ -117,6 +131,12 @@ def sliding_piece(offset, sqrnr, piece, board):
 
     for ofs in offset:
         temp_sqrnr = sqrnr
+
+        # make sure we can not jump from left to right side by comparing x coordinates
+        if abs(board.get_coordinates_from_square_nr(temp_sqrnr)[0] -
+               board.get_coordinates_from_square_nr(temp_sqrnr + ofs)[0]) > (2 * SQUARE_SIZE):
+            continue
+
         while is_inside_board(temp_sqrnr + ofs) and \
                 (board.board[temp_sqrnr + ofs] is None or
                  is_occupied_by_enemy(piece, temp_sqrnr + ofs, board)):
@@ -127,14 +147,38 @@ def sliding_piece(offset, sqrnr, piece, board):
             temp_sqrnr += ofs
     return result
 
+
 def check_checker(player, board):
     test_board = copy.deepcopy(board)
-    pos = board.king_pos.get(player)
+    pos = test_board.king_pos.get(player)
 
     # set new pieces to position where King is for respective player
-    test_board[pos] = Queen(pos, player)
-    result = legal_moves(test_board[pos], test_board)
-
+    # Queen
+    test_board.set_piece(pos, Queen(pos, player))
+    result = legal_moves(test_board.get_piece(pos), test_board)
     for res in result:
-        if isinstance(test_board[res], Queen) and test_board[pos].get_player() == player:
+        if isinstance(test_board.get_piece(res), Queen) and test_board.get_piece(res).get_player() != player:
             return True
+
+    # Bishop
+    test_board.set_piece(pos, Bishop(pos, player))
+    result = legal_moves(test_board.get_piece(pos), test_board)
+    for res in result:
+        if isinstance(test_board.get_piece(res), Bishop) and test_board.get_piece(res).get_player() != player:
+            return True
+
+    # Rook
+    test_board.set_piece(pos, Rook(pos, player))
+    result = legal_moves(test_board.get_piece(pos), test_board)
+    for res in result:
+        if isinstance(test_board.get_piece(res), Rook) and test_board.get_piece(res).get_player() != player:
+            return True
+
+    # Knight
+    test_board.set_piece(pos, Knight(pos, player))
+    result = legal_moves(test_board.get_piece(pos), test_board)
+    for res in result:
+        if isinstance(test_board.get_piece(res), Knight) and test_board.get_piece(res).get_player() != player:
+            return True
+
+    # King

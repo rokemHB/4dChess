@@ -36,7 +36,7 @@ def main():
         clock.tick(FPS)
 
         board.draw_squares(WIN)
-        # board.draw_numbers(WIN, font)
+        #board.draw_numbers(WIN, font)
         board.draw_pieces(WIN)
 
         WIN.blit(update_fps(), (WIDTH - 20, 0))

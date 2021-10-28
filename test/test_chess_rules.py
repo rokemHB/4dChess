@@ -31,7 +31,7 @@ class TestPieces(TestCase):
     # Pawn allowed to walk even though it muss kill rook that sets own King in check!
     def test_move_only_to_kill_piece_setting_me_check(self):
         self.board.selected_piece = self.board.get_piece(118)  # select the pawn
-        self.board.make_move(self.board.get_coordinates_from_square_nr(119), self.WIN)
+        self.board.make_move(get_coordinates_from_square_nr(119), self.WIN)
         self.assertFalse(self.board.get_piece(119), self.testPawn)
 
     def test_king_updates_position_internally(self):
@@ -39,7 +39,7 @@ class TestPieces(TestCase):
         self.board.selected_piece = self.board.get_piece(3)
         self.board.king_pos['n'] = 3
 
-        self.board.make_move(self.board.get_coordinates_from_square_nr(17), self.WIN)
+        self.board.make_move(get_coordinates_from_square_nr(17), self.WIN)
 
         self.assertTrue(self.board.king_pos.get('n'), 4)
 

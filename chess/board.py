@@ -10,6 +10,29 @@ from chess.pieces.queen import Queen
 from chess.pieces.rook import Rook
 
 
+
+# TODO: remove if not needed
+""" 
+def get_square_color(pos):
+
+    Calculates color of a square given coordinates
+    0 = White, 1 = Black
+
+    square_nr = coordinates_to_square(pos)
+    return ((square_nr % 14) + (square_nr // 14)) % 2
+    
+    
+def square_to_coordinates(pos):
+
+    Returns the top left square corner coordinates of a given coordinate
+
+    corner_pos = []
+    corner_pos.append((pos[0] // SQUARE_SIZE) * SQUARE_SIZE)
+    corner_pos.append((pos[1] // SQUARE_SIZE) * SQUARE_SIZE)
+    return corner_pos
+"""
+
+
 class Board:
     # stores the piece pngs
     IMAGES = {}
@@ -37,16 +60,12 @@ class Board:
         Bishop(83, 'e'), Bishop(125, 'e'), King(111, 'e'), Queen(97, 'e')
     ]
 
-    # safe king positions (square_nr) to check for check
-    king_n = 6
-    king_e = 111
-    king_s = 189
-    king_w = 84
+    # safe king positions (square_nr) to check for check - defaults are start positions
     king_pos = {'n': 6, 'e': 111, 's': 189, 'w': 84}
 
     def __init__(self):
         self.board = [None] * 196
-        self.selected_piece = None  # TODO: Needed?
+        self.selected_piece = None
 
     def draw_squares(self, win):
         """
@@ -81,6 +100,25 @@ class Board:
                 win.blit(number, (col * SQUARE_SIZE + SQUARE_SIZE / 15, row * SQUARE_SIZE + SQUARE_SIZE / 1.13))
                 i += 1
 
+    def get_coordinates_from_square_nr(self, square_nr):
+        """
+        calculates top left corner coordinates for a given square number
+        """
+        res = []
+        res.append((square_nr % 14) * SQUARE_SIZE)
+        res.append((square_nr // 14) * SQUARE_SIZE)
+        return res
+
+    def coordinates_to_square(self, pos):
+        """
+        Returns the square number for given x and y coordinates
+        """
+        x_square = pos[0] // SQUARE_SIZE  # integer division
+        y_square = pos[1] // SQUARE_SIZE
+        return int(x_square + 14 * y_square)
+
+
+
     def new_game(self, win):
         """
         Initiates new game
@@ -98,7 +136,7 @@ class Board:
     def get_piece(self, square_nr):
         return self.board[square_nr]
 
-    def load_images(self, path="images/"):
+    def load_images(self, path="C:/Users/kemmeri/Git/4dChess/chess/images/"):
         """
         Loads images to memory
         Needs absolute path on windows for some reason, on linux relative path is fine
@@ -129,23 +167,6 @@ class Board:
                     win.blit(self.IMAGES[filename], (col * SQUARE_SIZE, row * SQUARE_SIZE))
 
                 i += 1
-
-    def coordinates_to_square(self, pos):
-        """
-        Returns the square number for given x and y coordinates
-        """
-        x_square = pos[0] // SQUARE_SIZE  # integer division
-        y_square = pos[1] // SQUARE_SIZE
-        return int(x_square + 14 * y_square)
-
-    def square_to_coordinates(self, pos):
-        """
-        Returns the top left square corner coordinates of a given coordinate
-        """
-        corner_pos = []
-        corner_pos.append((pos[0] // SQUARE_SIZE) * SQUARE_SIZE)
-        corner_pos.append((pos[1] // SQUARE_SIZE) * SQUARE_SIZE)
-        return corner_pos
 
     def click(self, pos, player, win):
         """
@@ -221,23 +242,6 @@ class Board:
                     return False
         else:
             print("No piece is selected")
-
-    def get_square_color(self, pos):
-        """
-        Calculates color of a square given coordinates
-        0 = White, 1 = Black
-        """
-        square_nr = self.coordinates_to_square(pos)
-        return ((square_nr % 14) + (square_nr // 14)) % 2
-
-    def get_coordinates_from_square_nr(self, square_nr):
-        """
-        calculates top left corner coordinates for a given square number
-        """
-        res = []
-        res.append((square_nr % 14) * SQUARE_SIZE)
-        res.append((square_nr // 14) * SQUARE_SIZE)
-        return res
 
     def draw_legal_moves(self, win):
         """
