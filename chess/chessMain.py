@@ -3,7 +3,8 @@ import pygame
 from chess.board import Board
 from chess.constants import *  # TODO: might wanna specify if more constants get added
 
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+# -5 to kill little bar due to rounding errors, take less when scaling down window size
+WIN = pygame.display.set_mode((WIDTH-5, HEIGHT-5))
 pygame.display.set_caption('testChess')
 
 pygame.init()

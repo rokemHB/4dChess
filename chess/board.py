@@ -1,7 +1,7 @@
 import pygame
 
 from chess.constants import *
-from chess.movegenerator import legal_moves
+from chess.movegenerator import legal_moves, is_inside_board
 from chess.pieces.bishop import Bishop
 from chess.pieces.king import King
 from chess.pieces.knight import Knight
@@ -132,7 +132,10 @@ class Board:
         self.board[square_nr] = piece
 
     def get_piece(self, square_nr):
-        return self.board[square_nr]
+        if is_inside_board(square_nr):
+            return self.board[square_nr]
+        else:
+            return None
 
     def load_images(self, path="C:/Users/kemmeri/Git/4dChess/chess/images/"):
         """
