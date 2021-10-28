@@ -49,8 +49,6 @@ def main():
                 if board.click(pygame.mouse.get_pos(), players[currentPlayer], WIN):
                     piece_drag = True
 
-                    ### selected piece lassen wenn nichts gemoved wird und dann mit movement generator die legalen züge auf dem Feld einblenden
-
             elif event.type == pygame.MOUSEBUTTONUP:
                 if board.make_move(pygame.mouse.get_pos(), WIN):
                     currentPlayer = (currentPlayer + 1) % 4

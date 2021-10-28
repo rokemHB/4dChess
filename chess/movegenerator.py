@@ -90,23 +90,33 @@ def legal_moves(piece, board):
                      is_occupied_by_enemy(piece, sqrnr + ofs, board)):
                 result.append(sqrnr + ofs)
 
-    elif isinstance(piece, King):  # TODO: not allowed to walk into check -> use check_checker
+    elif isinstance(piece, King):  # TODO: How to give points when someone sets check? Because now we only try when it's respective players turn
         offset = [-13, -14, -15, -1, 1, 13, 14, 15]
         for ofs in offset:
+
+            # make sure we can not jump from left to right side by comparing x coordinates
+            if abs(board.get_coordinates_from_square_nr(sqrnr)[0] -
+                   board.get_coordinates_from_square_nr(sqrnr + ofs)[0]) > (3 * SQUARE_SIZE):
+                continue
+
             if is_inside_board(sqrnr + ofs) and \
                     (board.board[sqrnr + ofs] is None or
                      is_occupied_by_enemy(piece, sqrnr + ofs, board)):
 
-                # make sure king does not walk into check
-                test_board = copy.deepcopy(board)  # TODO: too many copies .... performace prolly bad
+                """
+                ### Make sure king does not walk into check.
+                ### Makes copy of board, sets king at each possible position and 
+                ###     tests with check_checker if king is in check.
+                """
+                test_board = copy.deepcopy(board)  # TODO: too many copies .... performance prolly bad. Any better way?
                 new_pos = piece.get_square() + ofs
                 player = piece.get_player()
                 test_board.set_piece(new_pos, King(new_pos, player))
                 test_board.set_piece(piece.get_square(), None)
                 test_board.king_pos[player] = new_pos
 
-                #if not check_checker(piece.get_player(), test_board):
-                 #   result.append(sqrnr + ofs)
+                if not check_checker(piece.get_player(), test_board):
+                    result.append(sqrnr + ofs)
 
     elif isinstance(piece, Queen):
         offset = [-13, 13, -15, 15, -1, 1, -14, 14]
@@ -181,4 +191,17 @@ def check_checker(player, board):
         if isinstance(test_board.get_piece(res), Knight) and test_board.get_piece(res).get_player() != player:
             return True
 
+    # TODO: King and Pawn
     # King
+    sqrnr = board.king_pos.get(player)
+    for dir in directions:
+        if abs(board.get_coordinates_from_square_nr(sqrnr)[0] -
+               board.get_coordinates_from_square_nr(sqrnr + dir)[0]) > (2 * SQUARE_SIZE):
+            continue
+
+        if isinstance(test_board.get_piece(sqrnr + dir), King) and test_board.get_piece(sqrnr + dir).get_player() != player:
+            return True
+
+
+
+    return False
