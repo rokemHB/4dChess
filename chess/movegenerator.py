@@ -181,8 +181,8 @@ def sliding_piece(offset, sqrnr, piece, board):
                 test_board.set_piece(piece.get_square(), None)
                 #test_board.king_pos[player] = new_pos   # nur wichtig wenn King bewegt wird
 
-                if not check_checker(piece.get_player(), test_board):
-                    result.append(temp_sqrnr + ofs)
+                #if not check_checker(piece.get_player(), test_board):
+                result.append(temp_sqrnr + ofs)
             else:
                 result.append(temp_sqrnr + ofs)
             #######
@@ -202,7 +202,8 @@ def check_checker(player, board):
     :param board: board of the given game
     :return: True if player is in check
     """
-    test_board = copy.deepcopy(board)
+    #test_board = copy.deepcopy(board)
+    test_board = board
     pos = test_board.king_pos.get(player)
 
     # set new pieces to position where King is for respective player

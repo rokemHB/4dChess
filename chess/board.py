@@ -61,6 +61,8 @@ class Board:
     # safe king positions (square_nr) to check for check - defaults are start positions
     king_pos = {'n': 6, 'e': 111, 's': 189, 'w': 84}
 
+    move_list = []
+
     def __init__(self):
         self.board = [None] * 196
         self.selected_piece = None
@@ -135,8 +137,8 @@ class Board:
         else:
             return None
 
-    def load_images(self, path="C:/Users/kemmeri/Git/4dChess/chess/images/"):
-        """
+    def load_images(self, path="images/"):
+        """  C:/Users/kemmeri/Git/4dChess/chess/
         Loads images to memory
         Needs absolute path on windows for some reason, on linux relative path is fine
         path given as parameter so test class in different package can also use it ...
@@ -174,15 +176,19 @@ class Board:
         """
         coor = self.coordinates_to_square(pos)
         if self.board[coor] is None:
+            self.move_list = []
             return False
         elif self.board[coor].get_player() == player:
             self.selected_piece = self.board[coor]
+            self.move_list = legal_moves(self.selected_piece, self)
             self.draw_legal_moves(win)
             return True
         else:
+            self.move_list = []
             return False
 
     def drag(self, pos, win):
+        # TODO: SAFE LEGAL MOVES; DONT MAKE THE CALCULATION FOR EVERY TICK!
         """
         Event for moving the mouse, only relevant after a mouse button has been clicked
         Draws the piece centered on the cursor
@@ -199,7 +205,6 @@ class Board:
         # TODO: Make Pawn to Queen when walked to opposite side of the board
         if self.selected_piece is not None:
 
-            move_list = legal_moves(self.selected_piece, self)
             self.draw_legal_moves(win)
 
             old_square = self.selected_piece.get_square()
@@ -209,7 +214,7 @@ class Board:
                 return False
             else:
                 # check if move is legal
-                if new_square in move_list:
+                if new_square in self.move_list:
 
                     self.board[old_square] = None
                     self.selected_piece.set_square(new_square)
@@ -250,11 +255,10 @@ class Board:
         # hier muss nun geguckt werden ob player im schach steht, und falls ja,
         # dürfen nur moves generiert werden, die dies ändern.
 
-        move_list = legal_moves(self.selected_piece, self)
-        if move_list is None:
+        if not self.move_list:
             return
         else:
-            for mv in move_list:
+            for mv in self.move_list:
                 coordinates = self.get_coordinates_from_square_nr(mv)
                 win.blit(self.IMAGES['green_dot'],
                          (int(coordinates[0] + SQUARE_SIZE / 4),  # TODO: replace green by grey dot when not ur turn
