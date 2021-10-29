@@ -176,7 +176,8 @@ class Board:
         """
         coor = self.coordinates_to_square(pos)
         if self.board[coor] is None:
-            self.move_list = []
+            if coor not in self.move_list:
+                self.move_list = []
             return False
         elif self.board[coor].get_player() == player:
             self.selected_piece = self.board[coor]
@@ -255,7 +256,7 @@ class Board:
         # hier muss nun geguckt werden ob player im schach steht, und falls ja,
         # dürfen nur moves generiert werden, die dies ändern.
 
-        if not self.move_list:
+        if not self.move_list:  # empty list is False in python (all sequences)
             return
         else:
             for mv in self.move_list:

@@ -54,12 +54,12 @@ def legal_moves(piece, board):
 
         if not is_inside_board(sqrnr + directions[player_direction]):
             return result
-        if not is_occupied_by_enemy(piece, sqrnr + directions[player_direction], board):
+        if board.get_piece(sqrnr + directions[player_direction]) is None:
             result.append(sqrnr + directions[player_direction])
-            if (player_direction == 4 and sqrnr < 25) or \
-                    (player_direction == 0 and sqrnr > 170) or \
-                    (player_direction == 2 and sqrnr in w_start) or \
-                    (player_direction == 6 and sqrnr in e_start):
+            if (player_direction == 4 and sqrnr < 25 and board.get_piece(sqrnr + 2*directions[player_direction]) is None) or \
+                    (player_direction == 0 and sqrnr > 170 and board.get_piece(sqrnr + 2*directions[player_direction]) is None) or \
+                    (player_direction == 2 and sqrnr in w_start and board.get_piece(sqrnr + 2*directions[player_direction]) is None) or \
+                    (player_direction == 6 and sqrnr in e_start and board.get_piece(sqrnr + 2*directions[player_direction]) is None):
                 result.append(sqrnr + 2 * directions[player_direction])
         if is_inside_board(sqrnr + directions[(player_direction - 1) % 8]) and \
                 is_occupied_by_enemy(piece, sqrnr + directions[(player_direction - 1) % 8], board):
