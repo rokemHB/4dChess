@@ -1,15 +1,13 @@
 import pygame
 
 from chess.constants import *
-from chess.movegenerator import legal_moves, is_inside_board
+from chess.movegenerator import legal_moves, is_inside_board, check_checker
 from chess.pieces.bishop import Bishop
 from chess.pieces.king import King
 from chess.pieces.knight import Knight
 from chess.pieces.pawn import Pawn
 from chess.pieces.queen import Queen
 from chess.pieces.rook import Rook
-
-
 
 # TODO: remove if not needed
 """ 
@@ -248,6 +246,10 @@ class Board:
         """
         draws circles to the board for all legal moves
         """
+
+        # hier muss nun geguckt werden ob player im schach steht, und falls ja,
+        # dürfen nur moves generiert werden, die dies ändern.
+
         move_list = legal_moves(self.selected_piece, self)
         if move_list is None:
             return
