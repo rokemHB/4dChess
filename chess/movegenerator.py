@@ -25,9 +25,11 @@ w_start = [43, 57, 71, 85, 99, 113, 127, 141]
 e_start = [54, 68, 82, 96, 110, 124, 138, 152]
 
 
-def legal_moves(piece, board):
+def legal_moves(piece, board, king_flag=False):
     """
     Determines whether a move is legal. Current position is known to piece
+    king_flag ist for special case when each step of a king results in becoming all other pieces and checking
+        all other legal moves. In this case, logic for checking if own movement sets own king check is disabled!
     :return: list of legal square_nr
     """
 
@@ -70,13 +72,13 @@ def legal_moves(piece, board):
 
     elif isinstance(piece, Rook):
         offset = [-1, 1, -14, 14]
-        result = sliding_piece(offset, sqrnr, piece, board)
+        result = sliding_piece(offset, sqrnr, piece, board, king_flag)
 
     elif isinstance(piece, Bishop):
         offset = [-13, 13, -15, 15]
-        result = sliding_piece(offset, sqrnr, piece, board)
+        result = sliding_piece(offset, sqrnr, piece, board, king_flag)
 
-    elif isinstance(piece, Knight):
+    elif isinstance(piece, Knight):  # TODO: Still missing the logic to check if moving this piece sets own player chess somehow? even possible with knight?
         offset = [-16, -29, -27, -12, 16, 29, 27, 12]
         for ofs in offset:
 
@@ -115,12 +117,12 @@ def legal_moves(piece, board):
                 test_board.set_piece(piece.get_square(), None)
                 test_board.king_pos[player] = new_pos
 
-                if not check_checker(piece.get_player(), test_board):
+                if not check_checker(piece.get_player(), test_board, True):
                     result.append(sqrnr + ofs)
 
     elif isinstance(piece, Queen):
         offset = [-13, 13, -15, 15, -1, 1, -14, 14]
-        result = sliding_piece(offset, sqrnr, piece, board)
+        result = sliding_piece(offset, sqrnr, piece, board, king_flag)
 
     return result
 
@@ -142,9 +144,10 @@ def is_inside_board(square_nr):
     return 2 < square_nr < 193 and square_nr not in DEAD_SQUARES
 
 
-def sliding_piece(offset, sqrnr, piece, board):
+def sliding_piece(offset, sqrnr, piece, board, king_flag):
     """
     Takes care of the logic for all sliding pieces
+    :param king_flag: less calculation if steps of king is originally testet
     :param offset: directions to check, rook vs bishop vs both
     :param sqrnr: square number to start from
     :param piece: piece for which evaluation shell be done
@@ -167,22 +170,25 @@ def sliding_piece(offset, sqrnr, piece, board):
                    board.get_coordinates_from_square_nr(temp_sqrnr + ofs)[0]) > (2 * SQUARE_SIZE):
                 break
             ####### Really bad performance, might look for different implementation
-            if step_counter < 1:
-                test_board = copy.deepcopy(board)  # TODO: too many copies .... performance prolly bad. Any better way?
-                new_pos = piece.get_square() + ofs
-                player = piece.get_player()
-                if isinstance(piece, Rook):
-                    test_board.set_piece(new_pos, Rook(new_pos, player))
-                elif isinstance(piece, Bishop):
-                    test_board.set_piece(new_pos, Bishop(new_pos, player))
-                elif isinstance(piece, Queen):
-                    test_board.set_piece(new_pos, Queen(new_pos, player))
+            if not king_flag:
+                if step_counter < 1:
+                    test_board = copy.deepcopy(board)  # TODO: too many copies .... performance prolly bad. Any better way?
+                    new_pos = piece.get_square() + ofs
+                    player = piece.get_player()
+                    if isinstance(piece, Rook):
+                        test_board.set_piece(new_pos, Rook(new_pos, player))
+                    elif isinstance(piece, Bishop):
+                        test_board.set_piece(new_pos, Bishop(new_pos, player))
+                    elif isinstance(piece, Queen):
+                        test_board.set_piece(new_pos, Queen(new_pos, player))
 
-                test_board.set_piece(piece.get_square(), None)
-                #test_board.king_pos[player] = new_pos   # nur wichtig wenn King bewegt wird
+                    test_board.set_piece(piece.get_square(), None)
+                    #test_board.king_pos[player] = new_pos   # nur wichtig wenn King bewegt wird
 
-                #if not check_checker(piece.get_player(), test_board):
-                result.append(temp_sqrnr + ofs)
+                    if not check_checker(piece.get_player(), test_board):
+                        result.append(temp_sqrnr + ofs)
+                else:
+                    result.append(temp_sqrnr + ofs)
             else:
                 result.append(temp_sqrnr + ofs)
             #######
@@ -195,7 +201,7 @@ def sliding_piece(offset, sqrnr, piece, board):
     return result
 
 
-def check_checker(player, board):
+def check_checker(player, board, king_flag):
     """
     Test whether a player is checked. Looks up king position in board.king_pos dict.
     :param player: player for which the check should be checked
@@ -209,28 +215,28 @@ def check_checker(player, board):
     # set new pieces to position where King is for respective player
     # Queen
     test_board.set_piece(pos, Queen(pos, player))
-    result = legal_moves(test_board.get_piece(pos), test_board)
+    result = legal_moves(test_board.get_piece(pos), test_board, king_flag)
     for res in result:
         if isinstance(test_board.get_piece(res), Queen) and test_board.get_piece(res).get_player() != player:
             return True
 
     # Bishop
     test_board.set_piece(pos, Bishop(pos, player))
-    result = legal_moves(test_board.get_piece(pos), test_board)
+    result = legal_moves(test_board.get_piece(pos), test_board, king_flag)
     for res in result:
         if isinstance(test_board.get_piece(res), Bishop) and test_board.get_piece(res).get_player() != player:
             return True
 
     # Rook
     test_board.set_piece(pos, Rook(pos, player))
-    result = legal_moves(test_board.get_piece(pos), test_board)
+    result = legal_moves(test_board.get_piece(pos), test_board, king_flag)
     for res in result:
         if isinstance(test_board.get_piece(res), Rook) and test_board.get_piece(res).get_player() != player:
             return True
 
     # Knight
     test_board.set_piece(pos, Knight(pos, player))
-    result = legal_moves(test_board.get_piece(pos), test_board)
+    result = legal_moves(test_board.get_piece(pos), test_board, king_flag)
     for res in result:
         if isinstance(test_board.get_piece(res), Knight) and test_board.get_piece(res).get_player() != player:
             return True
