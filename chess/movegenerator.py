@@ -160,15 +160,37 @@ def sliding_piece(offset, sqrnr, piece, board):
                 (board.board[temp_sqrnr + ofs] is None or
                  is_occupied_by_enemy(piece, temp_sqrnr + ofs, board)):
 
+            step_counter = 0
+
             # make sure we can not jump from left to right side by comparing x coordinates
             if abs(board.get_coordinates_from_square_nr(temp_sqrnr)[0] -
                    board.get_coordinates_from_square_nr(temp_sqrnr + ofs)[0]) > (2 * SQUARE_SIZE):
                 break
+            ####### Really bad performance, might look for different implementation
+            if step_counter < 1:
+                test_board = copy.deepcopy(board)  # TODO: too many copies .... performance prolly bad. Any better way?
+                new_pos = piece.get_square() + ofs
+                player = piece.get_player()
+                if isinstance(piece, Rook):
+                    test_board.set_piece(new_pos, Rook(new_pos, player))
+                elif isinstance(piece, Bishop):
+                    test_board.set_piece(new_pos, Bishop(new_pos, player))
+                elif isinstance(piece, Queen):
+                    test_board.set_piece(new_pos, Queen(new_pos, player))
 
-            result.append(temp_sqrnr + ofs)
+                test_board.set_piece(piece.get_square(), None)
+                #test_board.king_pos[player] = new_pos   # nur wichtig wenn King bewegt wird
+
+                if not check_checker(piece.get_player(), test_board):
+                    result.append(temp_sqrnr + ofs)
+            else:
+                result.append(temp_sqrnr + ofs)
+            #######
+            #result.append(temp_sqrnr + ofs)
             if is_occupied_by_enemy(piece, temp_sqrnr + ofs, board):
                 capture = True  # TODO: probably give target square parameter?!
                 break
+            step_counter += 1
             temp_sqrnr += ofs
     return result
 
@@ -220,7 +242,8 @@ def check_checker(player, board):
             continue
 
         if is_inside_board(sqrnr + dir):
-            if isinstance(test_board.get_piece(sqrnr + dir), King) and test_board.get_piece(sqrnr + dir).get_player() != player:
+            if isinstance(test_board.get_piece(sqrnr + dir), King) and \
+                    test_board.get_piece(sqrnr + dir).get_player() != player:
                 return True
 
     # Pawn
