@@ -59,13 +59,16 @@ class Board:
     ]
 
     # safe king positions (square_nr) to check for check - defaults are start positions
-    king_pos = {'n': 6, 'e': 111, 's': 189, 'w': 84}
+
 
     move_list = []
 
     def __init__(self):
         self.board = [None] * 196
         self.selected_piece = None
+        self.king_pos = {'n': 6, 'e': 111, 's': 189, 'w': 84}
+        # TIL: when attribute is not in constructor, making deepcopy of class will point to same memory of attribute,
+        #      so that changing the copy will still change the original. Calling it in constructor prevents it.
 
     def draw_squares(self, win):
         """

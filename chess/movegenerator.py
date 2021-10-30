@@ -115,7 +115,7 @@ def legal_moves(piece, board, king_flag=False):
                 player = piece.get_player()
                 test_board.set_piece(new_pos, King(new_pos, player))
                 test_board.set_piece(piece.get_square(), None)
-                test_board.king_pos[player] = new_pos
+                test_board.king_pos[player] = new_pos ##### this chages board.king_pos ...
 
                 if not check_checker(piece.get_player(), test_board, True):
                     result.append(sqrnr + ofs)
@@ -185,7 +185,7 @@ def sliding_piece(offset, sqrnr, piece, board, king_flag):
                     test_board.set_piece(piece.get_square(), None)
                     #test_board.king_pos[player] = new_pos   # nur wichtig wenn King bewegt wird
 
-                    if not check_checker(piece.get_player(), test_board):
+                    if not check_checker(piece.get_player(), test_board, king_flag):
                         result.append(temp_sqrnr + ofs)
                 else:
                     result.append(temp_sqrnr + ofs)
@@ -244,6 +244,7 @@ def check_checker(player, board, king_flag):
     # King
     sqrnr = board.king_pos.get(player)
     for dir in directions:
+        # dont jump across board left - right
         if abs(board.get_coordinates_from_square_nr(sqrnr)[0] -
                board.get_coordinates_from_square_nr(sqrnr + dir)[0]) > (2 * SQUARE_SIZE):
             continue
