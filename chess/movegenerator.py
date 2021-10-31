@@ -159,11 +159,11 @@ def sliding_piece(offset, sqrnr, piece, board, king_flag):
     for ofs in offset:
         temp_sqrnr = sqrnr
 
+        step_counter = 0
+
         while is_inside_board(temp_sqrnr + ofs) and \
                 (board.board[temp_sqrnr + ofs] is None or
                  is_occupied_by_enemy(piece, temp_sqrnr + ofs, board)):
-
-            step_counter = 0
 
             # make sure we can not jump from left to right side by comparing x coordinates
             if abs(board.get_coordinates_from_square_nr(temp_sqrnr)[0] -
@@ -208,8 +208,10 @@ def check_checker(player, board, king_flag):
     :param board: board of the given game
     :return: True if player is in check
     """
-    #test_board = copy.deepcopy(board)
-    test_board = board
+
+    # TODO: Clicking for moving sometimes does not work, but draggin by mouse does!
+
+    test_board = copy.deepcopy(board)
     pos = test_board.king_pos.get(player)
 
     # set new pieces to position where King is for respective player

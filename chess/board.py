@@ -58,14 +58,12 @@ class Board:
         Bishop(83, 'e'), Bishop(125, 'e'), King(111, 'e'), Queen(97, 'e')
     ]
 
-    # safe king positions (square_nr) to check for check - defaults are start positions
-
-
     move_list = []
 
     def __init__(self):
         self.board = [None] * 196
         self.selected_piece = None
+        # safe king positions (square_nr) to check for check - defaults are start positions
         self.king_pos = {'n': 6, 'e': 111, 's': 189, 'w': 84}
         # TIL: when attribute is not in constructor, making deepcopy of class will point to same memory of attribute,
         #      so that changing the copy will still change the original. Calling it in constructor prevents it.
@@ -177,6 +175,10 @@ class Board:
         Event for pressing down a mouse button
         Returns the piece object on the respective square
         """
+        if check_checker(player, self, False):
+            print("TESTCHECKERMOTHERFUCKER!!!!!!!!!!!") # How to filter moves now for anti check only?
+            # idee: noch ne flag, in_check = True, diese in legal_moves() einbringen. Wenn True, in jeder
+            #       iteration prüfen, ob dann noch in check. Performance will be shit ...
         coor = self.coordinates_to_square(pos)
         if self.board[coor] is None:
             if coor not in self.move_list:
@@ -187,6 +189,8 @@ class Board:
             self.move_list = legal_moves(self.selected_piece, self)
             self.draw_legal_moves(win)
             return True
+        elif self.board[coor].get_player() != player:
+            self.move_list = legal_moves(self.selected_piece, self)
         else:
             self.move_list = []
             return False
