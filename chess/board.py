@@ -58,6 +58,10 @@ class Board:
         Bishop(83, 'e'), Bishop(125, 'e'), King(111, 'e'), Queen(97, 'e')
     ]
 
+    startPositions2 = [
+        King(3, 'n'), Rook(31, 'w')
+    ]
+
     move_list = []
 
     def __init__(self):
@@ -67,6 +71,9 @@ class Board:
         self.king_pos = {'n': 6, 'e': 111, 's': 189, 'w': 84}
         # TIL: when attribute is not in constructor, making deepcopy of class will point to same memory of attribute,
         #      so that changing the copy will still change the original. Calling it in constructor prevents it.
+
+    def delete_board(self):
+        self.board = [None] * 196
 
     def draw_squares(self, win):
         """
