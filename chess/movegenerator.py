@@ -1,140 +1,58 @@
-import copy
-
-from chess.constants import DEAD_SQUARES, SQUARE_SIZE
-from chess.pieces.bishop import Bishop
-from chess.pieces.king import King
-from chess.pieces.knight import Knight
-from chess.pieces.pawn import Pawn
-from chess.pieces.queen import Queen
-from chess.pieces.rook import Rook
+# much logic adapted to 4 player chess from https://github.com/SebLague/Chess-AI/
 
 
-# position offsets for north, northeast ...
-n = -14
-ne = -13
-e = 1
-se = 15
-s = 14
-sw = 13
-w = -1
-nw = -15
-directions = [n, ne, e, se, s, sw, w, nw]
+# 4 orthogonal and 4 diagonal directions (N, S, W, E, NW, SE, NE, SW)
+from chess.constants import DEAD_SQUARES
 
-# start locations pawns of players w and e
-w_start = [43, 57, 71, 85, 99, 113, 127, 141]
-e_start = [54, 68, 82, 96, 110, 124, 138, 152]
+direction_offsets = [-14, 14, -1, 1, -15, 15, -13, 13]
+
+# For every square, stores number of squares to the edge for all 8 direction for given position
+# 196 x 8 matrix for 8 direction_offsets
+numSquaresToEdge = [[0 for x in range(8)] for y in range(196)]
 
 
-def legal_moves(piece, board, king_flag=False):
-    """
-    Determines whether a move is legal. Current position is known to piece
-    king_flag ist for special case when each step of a king results in becoming all other pieces and checking
-        all other legal moves. In this case, logic for checking if own movement sets own king check is disabled!
-    :return: list of legal square_nr
-    """
+def precalculate_data():
+    for square_nr in range(0, 196):
 
-    # https://www.chess.com/club/4-player-chess-1 for rules
+        if is_inside_board(square_nr):
 
-    result = []
+            # orthogonal directions:
+            # fill steps to edge for each direction and each square_nr
+            y = square_nr // 14
+            x = square_nr - y * 14  # probably faster than square_nr % 14
 
-    capture = False  # TODO: in case of capture do something
+            # exclude dead squares in the corners of 4 player chess board
+            if 2 < x < 11:
+                north = y
+                south = 13 - y
+                if 2 < y < 11:
+                    west = x
+                    east = 13 - x
+                else:  # y < 3 or y > 11
+                    west = x - 3
+                    east = 10 - x
+            else:  # x < 2 || x > 11
+                north = y - 3
+                south = 10 - y
+                west = x
+                east = 13 - x
 
-    if piece is None:
-        return
-    else:
-        sqrnr = piece.get_square()
-    if isinstance(piece, Pawn):  # No en passant in 4 player chess
+            numSquaresToEdge[square_nr][0] = north
+            numSquaresToEdge[square_nr][1] = south
+            numSquaresToEdge[square_nr][2] = west
+            numSquaresToEdge[square_nr][3] = east
 
-        if piece.get_player() == 'n':
-            player_direction = 4
-        elif piece.get_player() == 's':
-            player_direction = 0
-        elif piece.get_player() == 'w':
-            player_direction = 2
-        else:
-            player_direction = 6
-
-        if not is_inside_board(sqrnr + directions[player_direction]):
-            return result
-        if board.get_piece(sqrnr + directions[player_direction]) is None:
-            result.append(sqrnr + directions[player_direction])
-            if (player_direction == 4 and sqrnr < 25 and board.get_piece(sqrnr + 2*directions[player_direction]) is None) or \
-                    (player_direction == 0 and sqrnr > 170 and board.get_piece(sqrnr + 2*directions[player_direction]) is None) or \
-                    (player_direction == 2 and sqrnr in w_start and board.get_piece(sqrnr + 2*directions[player_direction]) is None) or \
-                    (player_direction == 6 and sqrnr in e_start and board.get_piece(sqrnr + 2*directions[player_direction]) is None):
-                result.append(sqrnr + 2 * directions[player_direction])
-        if is_inside_board(sqrnr + directions[(player_direction - 1) % 8]) and \
-                is_occupied_by_enemy(piece, sqrnr + directions[(player_direction - 1) % 8], board):
-            result.append(sqrnr + directions[(player_direction - 1) % 8])
-        if is_inside_board(sqrnr + directions[(player_direction + 1) % 8]) and \
-                is_occupied_by_enemy(piece, sqrnr + directions[(player_direction + 1) % 8], board):
-            result.append(sqrnr + directions[(player_direction + 1) % 8])
-
-    elif isinstance(piece, Rook):
-        offset = [-1, 1, -14, 14]
-        result = sliding_piece(offset, sqrnr, piece, board, king_flag)
-
-    elif isinstance(piece, Bishop):
-        offset = [-13, 13, -15, 15]
-        result = sliding_piece(offset, sqrnr, piece, board, king_flag)
-
-    elif isinstance(piece, Knight):  # TODO: Still missing the logic to check if moving this piece sets own player chess somehow? even possible with knight?
-        offset = [-16, -29, -27, -12, 16, 29, 27, 12]
-        for ofs in offset:
-
-            # make sure we can not jump from left to right side by comparing x coordinates
-            if abs(board.get_coordinates_from_square_nr(sqrnr)[0] -
-                   board.get_coordinates_from_square_nr(sqrnr + ofs)[0]) > (2 * SQUARE_SIZE):
-                continue
-
-            if is_inside_board(sqrnr + ofs) and \
-                    (board.board[sqrnr + ofs] is None or
-                     is_occupied_by_enemy(piece, sqrnr + ofs, board)):
-                result.append(sqrnr + ofs)
-
-    elif isinstance(piece, King):  # TODO: How to give points when someone sets check? Because now we only try when it's respective players turn
-        offset = [-13, -14, -15, -1, 1, 13, 14, 15]
-        for ofs in offset:
-
-            # make sure we can not jump from left to right side by comparing x coordinates
-            if abs(board.get_coordinates_from_square_nr(sqrnr)[0] -
-                   board.get_coordinates_from_square_nr(sqrnr + ofs)[0]) > (3 * SQUARE_SIZE):
-                continue
-
-            if is_inside_board(sqrnr + ofs) and \
-                    (board.board[sqrnr + ofs] is None or
-                     is_occupied_by_enemy(piece, sqrnr + ofs, board)):
-
-                """
-                ### Make sure king does not walk into check.
-                ### Makes copy of board, sets king at each possible position and 
-                ###     tests with check_checker if king is in check.
-                """
-                test_board = copy.deepcopy(board)  # TODO: too many copies .... performance prolly bad. Any better way?
-                new_pos = piece.get_square() + ofs
-                player = piece.get_player()
-                test_board.set_piece(new_pos, King(new_pos, player))
-                test_board.set_piece(piece.get_square(), None)
-                test_board.king_pos[player] = new_pos ##### this chages board.king_pos ...
-
-                if not check_checker(piece.get_player(), test_board, True):
-                    result.append(sqrnr + ofs)
-
-    elif isinstance(piece, Queen):
-        offset = [-13, 13, -15, 15, -1, 1, -14, 14]
-        result = sliding_piece(offset, sqrnr, piece, board, king_flag)
-
-    return result
-
-
-def is_occupied_by_enemy(piece, square_nr, board):
-    """
-    Returns true when a given square is occupied by an enemy for given player
-    """
-    if board.board[square_nr] is None:
-        return False
-    else:
-        return piece.get_player() != board.board[square_nr].get_player()
+            # diagonal directions:
+            # counts offset index
+            j = 4
+            for offset in direction_offsets[4:8]:
+                i = 0
+                while is_inside_board(i * offset + square_nr):
+                    i += 1
+                numSquaresToEdge[square_nr][j] = i - 1
+                j += 1
+        else:  # dont fill dead squares
+            continue
 
 
 def is_inside_board(square_nr):
@@ -144,189 +62,6 @@ def is_inside_board(square_nr):
     return 2 < square_nr < 193 and square_nr not in DEAD_SQUARES
 
 
-def sliding_piece(offset, sqrnr, piece, board, king_flag):
-    """
-    Takes care of the logic for all sliding pieces
-    :param king_flag: less calculation if steps of king is originally testet
-    :param offset: directions to check, rook vs bishop vs both
-    :param sqrnr: square number to start from
-    :param piece: piece for which evaluation shell be done
-    :param board: board on which respective game takes place
-    :return: int array of square numbers indicating legal moves to go for given piece
-    """
-    result = []
-
-    for ofs in offset:
-        temp_sqrnr = sqrnr
-
-        step_counter = 0
-
-        while is_inside_board(temp_sqrnr + ofs) and \
-                (board.board[temp_sqrnr + ofs] is None or
-                 is_occupied_by_enemy(piece, temp_sqrnr + ofs, board)):
-
-            # make sure we can not jump from left to right side by comparing x coordinates
-            if abs(board.get_coordinates_from_square_nr(temp_sqrnr)[0] -
-                   board.get_coordinates_from_square_nr(temp_sqrnr + ofs)[0]) > (2 * SQUARE_SIZE):
-                break
-            ####### Really bad performance, might look for different implementation
-            if not king_flag:
-                if step_counter < 1:
-                    test_board = copy.deepcopy(board)  # TODO: too many copies .... performance prolly bad. Any better way?
-                    new_pos = piece.get_square() + ofs
-                    player = piece.get_player()
-                    if isinstance(piece, Rook):
-                        test_board.set_piece(new_pos, Rook(new_pos, player))
-                    elif isinstance(piece, Bishop):
-                        test_board.set_piece(new_pos, Bishop(new_pos, player))
-                    elif isinstance(piece, Queen):
-                        test_board.set_piece(new_pos, Queen(new_pos, player))
-
-                    test_board.set_piece(piece.get_square(), None)
-                    #test_board.king_pos[player] = new_pos   # nur wichtig wenn King bewegt wird
-
-                    if not check_checker(piece.get_player(), test_board, king_flag):
-                        result.append(temp_sqrnr + ofs)
-                else:
-                    result.append(temp_sqrnr + ofs)
-            else:
-                result.append(temp_sqrnr + ofs)
-            #######
-            #result.append(temp_sqrnr + ofs)
-            if is_occupied_by_enemy(piece, temp_sqrnr + ofs, board):
-                capture = True  # TODO: probably give target square parameter?!
-                break
-            step_counter += 1
-            temp_sqrnr += ofs
-    return result
-
-
-def check_checker(player, board, king_flag):
-    """
-    Test whether a player is checked. Looks up king position in board.king_pos dict.
-    :param player: player for which the check should be checked
-    :param board: board of the given game
-    :return: True if player is in check
-    """
-
-    # TODO: Clicking for moving sometimes does not work, but draggin by mouse does!
-
-    test_board = copy.deepcopy(board)
-    pos = test_board.king_pos.get(player)
-
-    # set new pieces to position where King is for respective player
-    # Queen
-    test_board.set_piece(pos, Queen(pos, player))
-    result = legal_moves(test_board.get_piece(pos), test_board, king_flag)
-    for res in result:
-        if isinstance(test_board.get_piece(res), Queen) and test_board.get_piece(res).get_player() != player:
-            return True
-
-    # Bishop
-    test_board.set_piece(pos, Bishop(pos, player))
-    result = legal_moves(test_board.get_piece(pos), test_board, king_flag)
-    for res in result:
-        if isinstance(test_board.get_piece(res), Bishop) and test_board.get_piece(res).get_player() != player:
-            return True
-
-    # Rook
-    test_board.set_piece(pos, Rook(pos, player))
-    result = legal_moves(test_board.get_piece(pos), test_board, king_flag)
-    for res in result:
-        if isinstance(test_board.get_piece(res), Rook) and test_board.get_piece(res).get_player() != player:
-            return True
-
-    # Knight
-    test_board.set_piece(pos, Knight(pos, player))
-    result = legal_moves(test_board.get_piece(pos), test_board, king_flag)
-    for res in result:
-        if isinstance(test_board.get_piece(res), Knight) and test_board.get_piece(res).get_player() != player:
-            return True
-
-    # King
-    sqrnr = board.king_pos.get(player)
-    for dir in directions:
-        # dont jump across board left - right
-        if abs(board.get_coordinates_from_square_nr(sqrnr)[0] -
-               board.get_coordinates_from_square_nr(sqrnr + dir)[0]) > (2 * SQUARE_SIZE):
-            continue
-
-        if is_inside_board(sqrnr + dir):
-            if isinstance(test_board.get_piece(sqrnr + dir), King) and \
-                    test_board.get_piece(sqrnr + dir).get_player() != player:
-                return True
-
-    # Pawn
-    if player == 'n':
-        temp_piece = test_board.get_piece(pos + 13)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() in ['s', 'w']:
-                return True
-        temp_piece = test_board.get_piece(pos + 15)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() in ['s', 'e']:
-                return True
-        temp_piece = test_board.get_piece(pos - 13)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() == 'e':
-                return True
-        temp_piece = test_board.get_piece(pos - 15)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() == 'w':
-                return True
-
-    elif player == 's':
-        temp_piece = test_board.get_piece(pos + 13)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() == 'w':
-                return True
-        temp_piece = test_board.get_piece(pos + 15)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() == 'e':
-                return True
-        temp_piece = test_board.get_piece(pos - 13)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() in ['e', 'n']:
-                return True
-        temp_piece = test_board.get_piece(pos - 15)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() in ['w', 'n']:
-                return True
-
-    elif player == 'w':
-        temp_piece = test_board.get_piece(pos + 13)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() == 's':
-                return True
-        temp_piece = test_board.get_piece(pos + 15)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() in ['s', 'e']:
-                return True
-        temp_piece = test_board.get_piece(pos - 13)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() in ['e', 'n']:
-                return True
-        temp_piece = test_board.get_piece(pos - 15)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() == 'n':
-                return True
-
-    elif player == 'e':
-        temp_piece = test_board.get_piece(pos + 13)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() in ['s', 'w']:
-                return True
-        temp_piece = test_board.get_piece(pos + 15)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() == 's':
-                return True
-        temp_piece = test_board.get_piece(pos - 13)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() == 'n':
-                return True
-        temp_piece = test_board.get_piece(pos - 15)
-        if isinstance(temp_piece, Pawn):
-            if temp_piece.get_player() in ['n', 'w']:
-                return True
-
-    return False
+precalculate_data()
+print(numSquaresToEdge[75])
+# [5, 8, 5, 8, 2, 5, 5, 6] --> letzte 6 ist falsch!

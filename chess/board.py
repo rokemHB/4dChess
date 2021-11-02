@@ -1,7 +1,7 @@
 import pygame
 
 from chess.constants import *
-from chess.movegenerator import legal_moves, is_inside_board, check_checker
+from chess.movegenerator_old import legal_moves, is_inside_board, check_checker
 from chess.pieces.bishop import Bishop
 from chess.pieces.king import King
 from chess.pieces.knight import Knight
