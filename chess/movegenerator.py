@@ -2,7 +2,8 @@
 
 
 # 4 orthogonal and 4 diagonal directions (N, S, W, E, NW, SE, NE, SW)
-from chess.constants import DEAD_SQUARES
+from chess import board
+from chess.constants import DEAD_SQUARES, SQUARE_SIZE
 
 direction_offsets = [-14, 14, -1, 1, -15, 15, -13, 13]
 
@@ -15,7 +16,6 @@ def precalculate_data():
     for square_nr in range(0, 196):
 
         if is_inside_board(square_nr):
-
             # orthogonal directions:
             # fill steps to edge for each direction and each square_nr
             y = square_nr // 14
@@ -31,7 +31,7 @@ def precalculate_data():
                 else:  # y < 3 or y > 11
                     west = x - 3
                     east = 10 - x
-            else:  # x < 2 || x > 11
+            else:  # x < 2 or x > 11
                 north = y - 3
                 south = 10 - y
                 west = x
@@ -48,7 +48,15 @@ def precalculate_data():
             for offset in direction_offsets[4:8]:
                 i = 0
                 while is_inside_board(i * offset + square_nr):
-                    i += 1
+
+                    # make sure we can not jump from left to right side by comparing x coordinates. This
+                    #   can otherwise happen if the wrap around square is legal
+                    if abs(board.get_coordinates_from_square_nr(i * offset + square_nr)[0] -
+                           board.get_coordinates_from_square_nr((i + 1) * offset + square_nr)[0]) > (2 * SQUARE_SIZE):
+                        i += 1  # still add for this round but stop then
+                        break
+                    else:
+                        i += 1
                 numSquaresToEdge[square_nr][j] = i - 1
                 j += 1
         else:  # dont fill dead squares
@@ -63,5 +71,5 @@ def is_inside_board(square_nr):
 
 
 precalculate_data()
-print(numSquaresToEdge[75])
+print(numSquaresToEdge[73])
 # [5, 8, 5, 8, 2, 5, 5, 6] --> letzte 6 ist falsch!

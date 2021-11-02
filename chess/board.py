@@ -31,6 +31,16 @@ def square_to_coordinates(pos):
 """
 
 
+def get_coordinates_from_square_nr(square_nr):
+    """
+    calculates top left corner coordinates for a given square number
+    """
+    res = []
+    res.append((square_nr % 14) * SQUARE_SIZE)
+    res.append((square_nr // 14) * SQUARE_SIZE)
+    return res
+
+
 class Board:
     # stores the piece pngs
     IMAGES = {}
@@ -107,15 +117,6 @@ class Board:
                 number = thisfont.render(str(i), True, (255, 0, 0))
                 win.blit(number, (col * SQUARE_SIZE + SQUARE_SIZE / 15, row * SQUARE_SIZE + SQUARE_SIZE / 1.13))
                 i += 1
-
-    def get_coordinates_from_square_nr(self, square_nr):
-        """
-        calculates top left corner coordinates for a given square number
-        """
-        res = []
-        res.append((square_nr % 14) * SQUARE_SIZE)
-        res.append((square_nr // 14) * SQUARE_SIZE)
-        return res
 
     def coordinates_to_square(self, pos):
         """
@@ -274,7 +275,7 @@ class Board:
             return
         else:
             for mv in self.move_list:
-                coordinates = self.get_coordinates_from_square_nr(mv)
+                coordinates = get_coordinates_from_square_nr(mv)
                 win.blit(self.IMAGES['green_dot'],
                          (int(coordinates[0] + SQUARE_SIZE / 4),  # TODO: replace green by grey dot when not ur turn
                           int(coordinates[1] + SQUARE_SIZE / 4)))
