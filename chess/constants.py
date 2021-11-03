@@ -12,5 +12,10 @@ FPS = 60
 DEAD_SQUARES = {0, 1, 2, 11, 12, 13, 14, 15, 16, 25, 26, 27, 28, 29, 30, 39, 40, 41,
                 154, 155, 156, 165, 166, 167, 168, 169, 170, 179, 180, 181, 182, 183, 184, 193, 194, 195}
 
+# index for each color on board / player
+NORTH_INDEX = 0
+SOUTH_INDEX = 1
+WEST_INDEX  = 2
+EAST_INDEX  = 3
 
 
