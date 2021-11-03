@@ -19,12 +19,13 @@ numSquaresToEdge = dict()
 #   0 still kinda okay since 0 is dead square in 4p chess
 # --> CAN THIS ALSO BE REPLACED BY A DICT?
 knight_moves = [[0 for x in range(8)] for y in range(196)]
+king_moves = [[0 for x in range(8)] for y in range(196)]
 
-knight_attack_bitboards = dict()  # TODO: if this works make the others to dicts as well?
+knight_attack_bitboards = dict()
+king_attack_bitboards = dict()
 
 
 def precalculate_data():
-
     for square_nr in range(0, 196):
 
         if is_inside_board(square_nr):
@@ -93,12 +94,35 @@ def precalculate_data():
                 # make sure no wrap around sides of board
                 max_move_distance = max(abs(x - knight_square_x), abs(y - knight_square_y))
                 if max_move_distance == 2:
-                    knight_moves[square_nr][k] = knight_jump_square
+                    knight_moves[square_nr][k] = bin(knight_jump_square)  # TODO: how to deal with empty entries here? -> Also: safe as binary or integer?
 
                     # set 1 for square position in knight bitboard
                     knight_bitboard |= 1 << knight_jump_square
-
+            k += 1
         knight_attack_bitboards[square_nr] = knight_bitboard
+
+        ### ---------------------------------------- ###
+        # king moves with bitboards (ignores castling) #
+        ### ---------------------------------------- ###
+
+        king_bitboard = 0
+        k = 0
+
+        for ofs in direction_offsets:
+            king_jump_square = square_nr + ofs
+            if is_inside_board(king_jump_square):
+                king_square_y = king_jump_square // 14
+                king_square_x = king_jump_square - king_square_y * 14
+
+                # make sure no wrap around sides of board
+                max_move_distance = max(abs(x - king_square_x), abs(y - king_square_y))
+                if max_move_distance == 1:
+                    king_moves[square_nr][k] = bin(king_jump_square)  # TODO: how to deal with empty entries here? -> Also: safe as binary or integer?
+
+                    # set 1 for square position in knight bitboard
+                    king_bitboard |= 1 << king_jump_square
+            k += 1
+        king_attack_bitboards[square_nr] = king_bitboard
 
 
 def is_inside_board(square_nr):
@@ -108,7 +132,12 @@ def is_inside_board(square_nr):
     return 2 < square_nr < 193 and square_nr not in DEAD_SQUARES
 
 
+# just for testing
 precalculate_data()
 print(numSquaresToEdge[73])
 
 print(bin(knight_attack_bitboards.get(190)))
+
+print(knight_moves[75])
+
+print(king_moves[75])
