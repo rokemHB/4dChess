@@ -1,5 +1,5 @@
 from chess import board
-from chess.constants import DEAD_SQUARES, SQUARE_SIZE
+from chess.constants import DEAD_SQUARES, SQUARE_SIZE, NORTH_INDEX, SOUTH_INDEX, WEST_INDEX, EAST_INDEX
 
 # some logic adapted to 4 player chess from https://github.com/SebLague/Chess-AI/
 
@@ -26,13 +26,23 @@ king_attack_bitboards = dict()
 
 direction_lookup = dict()
 
+pawn_attack_bitboards = [[0 for x in range(4)] for y in range(196)]
+pawn_attacks_north = dict()
+pawn_attacks_south = dict()
+pawn_attacks_west  = dict()
+pawn_attacks_east  = dict()
+
+
 
 def precalculate_data():
     for square_nr in range(0, 196):
 
         if is_inside_board(square_nr):
 
-            ### fill steps to edge for all directions per square_nr
+            ## ------------------------------------------------- ##
+            # fill steps to edge for all directions per square_nr #
+            ## ------------------------------------------------- ##
+
             temp_result = []
 
             # orthogonal directions:
@@ -75,58 +85,107 @@ def precalculate_data():
                 temp_result.append(i - 1)
             numSquaresToEdge[square_nr] = temp_result
 
-        else:  # dont fill dead squares
+
+            ## ------------------------- ##
+            # knight moves with bitboards #
+            ## ------------------------- ##
+
+            knight_bitboard = 0
+            k = 0
+
+            for ofs in knight_offsets:
+                knight_jump_square = square_nr + ofs
+                if is_inside_board(knight_jump_square):
+
+                    # get respective x and y coordinates of target square
+                    knight_square_y = knight_jump_square // 14
+                    knight_square_x = knight_jump_square - knight_square_y * 14
+
+                    # make sure no wrap around sides of board
+                    max_move_distance = max(abs(x - knight_square_x), abs(y - knight_square_y))
+                    if max_move_distance == 2:
+                        knight_moves[square_nr][k] = knight_jump_square  # TODO: how to deal with empty entries here? -> Also: safe as binary or integer?
+
+                        # set 1 for square position in knight bitboard
+                        knight_bitboard |= 1 << knight_jump_square
+                k += 1
+            knight_attack_bitboards[square_nr] = knight_bitboard
+
+            ## ------------------------------------------ ##
+            # king moves with bitboards (ignores castling) #
+            ## ------------------------------------------ ##
+
+            king_bitboard = 0
+            k = 0
+
+            for ofs in direction_offsets:
+                king_jump_square = square_nr + ofs
+                if is_inside_board(king_jump_square):
+                    king_square_y = king_jump_square // 14
+                    king_square_x = king_jump_square - king_square_y * 14
+
+                    # make sure no wrap around sides of board
+                    max_move_distance = max(abs(x - king_square_x), abs(y - king_square_y))
+                    if max_move_distance == 1:
+                        king_moves[square_nr][k] = king_jump_square  # TODO: how to deal with empty entries here? -> Also: safe as binary or integer?
+
+                        # set 1 for square position in knight bitboard
+                        king_bitboard |= 1 << king_jump_square
+                k += 1
+            king_attack_bitboards[square_nr] = king_bitboard
+
+            ## -------------------- ##
+            # pawn capture bitboards #
+            ## -------------------- ##
+
+            pawn_captures_north = []
+            pawn_captures_south = []
+            pawn_captures_west  = []
+            pawn_captures_east  = []
+
+            # player north
+            # if inside_board and no wrap around
+            if is_inside_board(square_nr + 13) and abs(x - ((square_nr + 13) % 14)) == 1:
+                pawn_captures_north.append(square_nr + 13)
+                pawn_attack_bitboards[square_nr][NORTH_INDEX] |= 1 << (square_nr + 13)
+            if is_inside_board(square_nr + 15) and abs(x - ((square_nr + 15) % 14)) == 1:
+                pawn_captures_north.append(square_nr + 15)
+                pawn_attack_bitboards[square_nr][NORTH_INDEX] |= 1 << (square_nr + 15)
+
+            # player south
+            if is_inside_board(square_nr - 13) and abs(x - ((square_nr - 13) % 14)) == 1:
+                pawn_captures_south.append(square_nr - 13)
+                pawn_attack_bitboards[square_nr][SOUTH_INDEX] |= 1 << (square_nr - 13)
+            if is_inside_board(square_nr - 15) and abs(x - ((square_nr - 15) % 14)) == 1:
+                pawn_captures_south.append(square_nr - 15)
+                pawn_attack_bitboards[square_nr][SOUTH_INDEX] |= 1 << (square_nr - 15)
+
+            # player west
+            if is_inside_board(square_nr - 13) and abs(x - ((square_nr - 13) % 14)) == 1:
+                pawn_captures_west.append(square_nr - 13)
+                pawn_attack_bitboards[square_nr][WEST_INDEX] |= 1 << (square_nr - 13)
+            if is_inside_board(square_nr + 15) and abs(x - ((square_nr + 15) % 14)) == 1:
+                pawn_captures_west.append(square_nr + 15)
+                pawn_attack_bitboards[square_nr][WEST_INDEX] |= 1 << (square_nr + 15)
+
+            # player east
+            if is_inside_board(square_nr + 13) and abs(x - ((square_nr + 13) % 14)) == 1:
+                pawn_captures_east.append(square_nr + 13)
+                pawn_attack_bitboards[square_nr][EAST_INDEX] |= 1 << (square_nr + 13)
+            if is_inside_board(square_nr - 15) and abs(x - ((square_nr - 15) % 14)) == 1:
+                pawn_captures_east.append(square_nr - 15)
+                pawn_attack_bitboards[square_nr][EAST_INDEX] |= 1 << (square_nr - 15)
+
+            pawn_attacks_north[square_nr] = pawn_captures_north
+            pawn_attacks_south[square_nr] = pawn_captures_south
+            pawn_attacks_west[square_nr]  = pawn_captures_west
+            pawn_attacks_east[square_nr]  = pawn_captures_east
+
+            # bishop, rook, queen bitboards...
+
+        else:  # square_nr is dead square
             continue
 
-        ### ----------------------- ###
-        # knight moves with bitboards #
-        ### ----------------------- ###
-
-        knight_bitboard = 0
-        k = 0
-
-        for ofs in knight_offsets:
-            knight_jump_square = square_nr + ofs
-            if is_inside_board(knight_jump_square):
-
-                # get respective x and y coordinates of target square
-                knight_square_y = knight_jump_square // 14
-                knight_square_x = knight_jump_square - knight_square_y * 14
-
-                # make sure no wrap around sides of board
-                max_move_distance = max(abs(x - knight_square_x), abs(y - knight_square_y))
-                if max_move_distance == 2:
-                    knight_moves[square_nr][k] = bin(knight_jump_square)  # TODO: how to deal with empty entries here? -> Also: safe as binary or integer?
-
-                    # set 1 for square position in knight bitboard
-                    knight_bitboard |= 1 << knight_jump_square
-            k += 1
-        knight_attack_bitboards[square_nr] = knight_bitboard
-
-        ### ---------------------------------------- ###
-        # king moves with bitboards (ignores castling) #
-        ### ---------------------------------------- ###
-
-        king_bitboard = 0
-        k = 0
-
-        for ofs in direction_offsets:
-            king_jump_square = square_nr + ofs
-            if is_inside_board(king_jump_square):
-                king_square_y = king_jump_square // 14
-                king_square_x = king_jump_square - king_square_y * 14
-
-                # make sure no wrap around sides of board
-                max_move_distance = max(abs(x - king_square_x), abs(y - king_square_y))
-                if max_move_distance == 1:
-                    king_moves[square_nr][k] = bin(king_jump_square)  # TODO: how to deal with empty entries here? -> Also: safe as binary or integer?
-
-                    # set 1 for square position in knight bitboard
-                    king_bitboard |= 1 << king_jump_square
-            k += 1
-        king_attack_bitboards[square_nr] = king_bitboard
-
-        # bishop, rook, queen bitboards...
 
     # direction_lookup - works like a hashmap for directions between squares
     #   gets called at position: direction_lookup[target_square - start_square + 195]
@@ -160,8 +219,6 @@ def is_inside_board(square_nr):
     return 2 < square_nr < 193 and square_nr not in DEAD_SQUARES
 
 
-
-
 # just for testing
 precalculate_data()
 print(numSquaresToEdge[73])
@@ -171,3 +228,6 @@ print(bin(knight_attack_bitboards.get(190)))
 print(knight_moves[75])
 
 print(king_moves[75])
+
+print("Pawn east from 143", pawn_attacks_east[143])
+print(bin(pawn_attack_bitboards[75][2]))
