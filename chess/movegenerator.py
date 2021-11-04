@@ -24,6 +24,8 @@ king_moves = [[0 for x in range(8)] for y in range(196)]
 knight_attack_bitboards = dict()
 king_attack_bitboards = dict()
 
+direction_lookup = dict()
+
 
 def precalculate_data():
     for square_nr in range(0, 196):
@@ -124,12 +126,40 @@ def precalculate_data():
             k += 1
         king_attack_bitboards[square_nr] = king_bitboard
 
+        # bishop, rook, queen bitboards...
+
+    # direction_lookup - works like a hashmap for directions between squares
+    #   gets called at position: direction_lookup[target_square - start_square + 195]
+    #   has twice the board size for positive and negative offsets
+    for i in range(392):
+
+        # get the sign
+        offset = i - 195
+
+        abs_offset = abs(offset)
+        abs_direction = 1  # default left right depending on sign
+
+        if abs_offset % 15 == 0:
+            abs_direction = 15
+        elif abs_offset % 14 == 0:
+            abs_direction = 14
+        elif abs_offset % 13 == 0:
+            abs_direction = 13
+
+        # python has no sign() function lol
+        direction_lookup[i] = abs_direction * -1 if offset < 0 else abs_direction
+
+
+
+
 
 def is_inside_board(square_nr):
     """
     checks whether a given square number is within board limits
     """
     return 2 < square_nr < 193 and square_nr not in DEAD_SQUARES
+
+
 
 
 # just for testing
