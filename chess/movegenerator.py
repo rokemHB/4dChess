@@ -29,9 +29,12 @@ direction_lookup = dict()
 pawn_attack_bitboards = [[0 for x in range(4)] for y in range(196)]
 pawn_attacks_north = dict()
 pawn_attacks_south = dict()
-pawn_attacks_west  = dict()
-pawn_attacks_east  = dict()
+pawn_attacks_west = dict()
+pawn_attacks_east = dict()
 
+rook_moves = dict()
+bishop_moves = dict()
+queen_moves = dict()
 
 
 def precalculate_data():
@@ -84,7 +87,6 @@ def precalculate_data():
                         i += 1
                 temp_result.append(i - 1)
             numSquaresToEdge[square_nr] = temp_result
-
 
             ## ------------------------- ##
             # knight moves with bitboards #
@@ -140,8 +142,8 @@ def precalculate_data():
 
             pawn_captures_north = []
             pawn_captures_south = []
-            pawn_captures_west  = []
-            pawn_captures_east  = []
+            pawn_captures_west = []
+            pawn_captures_east = []
 
             # player north
             # if inside_board and no wrap around
@@ -178,14 +180,45 @@ def precalculate_data():
 
             pawn_attacks_north[square_nr] = pawn_captures_north
             pawn_attacks_south[square_nr] = pawn_captures_south
-            pawn_attacks_west[square_nr]  = pawn_captures_west
-            pawn_attacks_east[square_nr]  = pawn_captures_east
+            pawn_attacks_west[square_nr] = pawn_captures_west
+            pawn_attacks_east[square_nr] = pawn_captures_east
 
-            # bishop, rook, queen bitboards...
+            ## -------------------- ##
+            # rook capture bitboards #
+            ## -------------------- ##
+
+            rook_bitboard = 0
+
+            for direction_index in range(4):
+                current_offset = direction_offsets[direction_index]
+                for step in range(numSquaresToEdge[square_nr][direction_index]):
+                    target_square = square_nr + current_offset * (step + 1)
+                    rook_bitboard |= 1 << target_square
+
+            rook_moves[square_nr] = rook_bitboard
+
+            ## ---------------------- ##
+            # bishop capture bitboards #
+            ## ---------------------- ##
+
+            bishop_bitboard = 0
+
+            for direction_index in range(4, 8, 1):
+                current_offset = direction_offsets[direction_index]
+                for step in range(numSquaresToEdge[square_nr][direction_index]):
+                    target_square = square_nr + current_offset * (step + 1)
+                    bishop_bitboard |= 1 << target_square
+
+            bishop_moves[square_nr] = bishop_bitboard
+
+            ## --------------------- ##
+            # queen capture bitboards #
+            ## --------------------- ##
+
+            queen_moves[square_nr] = rook_moves.get(square_nr) | bishop_moves.get(square_nr)
 
         else:  # square_nr is dead square
             continue
-
 
     # direction_lookup - works like a hashmap for directions between squares
     #   gets called at position: direction_lookup[target_square - start_square + 195]
