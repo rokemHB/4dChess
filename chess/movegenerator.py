@@ -220,6 +220,10 @@ def precalculate_data():
         else:  # square_nr is dead square
             continue
 
+    ## -------------- ##
+    # direction_lookup #
+    ## -------------- ##
+
     # direction_lookup - works like a hashmap for directions between squares
     #   gets called at position: direction_lookup[target_square - start_square + 195]
     #   has twice the board size for positive and negative offsets
@@ -241,8 +245,11 @@ def precalculate_data():
         # python has no sign() function lol
         direction_lookup[i] = abs_direction * -1 if offset < 0 else abs_direction
 
+        ## -------------- ##
+        # distance lookup  #
+        ## -------------- ##
 
-
+        # TODO: implement!
 
 
 def is_inside_board(square_nr):
@@ -252,15 +259,24 @@ def is_inside_board(square_nr):
     return 2 < square_nr < 193 and square_nr not in DEAD_SQUARES
 
 
+
+
+
+
 # just for testing
 precalculate_data()
 print(numSquaresToEdge[73])
-
+print('\n')
 print(bin(knight_attack_bitboards.get(190)))
-
+print('\n')
 print(knight_moves[75])
-
+print('\n')
 print(king_moves[75])
-
+print('\n')
 print("Pawn east from 143", pawn_attacks_east[143])
+print('\n')
 print(bin(pawn_attack_bitboards[75][2]))
+print('\n')
+print('rook moves', bin(rook_moves.get(3)))
+print('\n')
+print('queen_moves', bin(queen_moves[3]))
