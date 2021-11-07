@@ -9,6 +9,8 @@ from chess.constants import DEAD_SQUARES, SQUARE_SIZE, NORTH_INDEX, SOUTH_INDEX,
 # rotated bitmaps publication: https://sci-hub.st/10.3233/ICG-1999-22403
 
 # 4 orthogonal and 4 diagonal directions (N, S, W, E, NW, SE, NE, SW)
+from chess.move import Move
+
 direction_offsets = [-14, 14, -1, 1, -15, 15, -13, 13]
 knight_offsets = [-16, -29, -27, -12, 16, 29, 27, 12]
 
@@ -245,11 +247,11 @@ def precalculate_data():
         # python has no sign() function lol
         direction_lookup[i] = abs_direction * -1 if offset < 0 else abs_direction
 
-        ## -------------- ##
-        # distance lookup  #
-        ## -------------- ##
+    ## -------------- ##
+    # distance lookup  #
+    ## -------------- ##
 
-        # TODO: implement!
+    # TODO: implement!
 
 
 def is_inside_board(square_nr):
@@ -257,6 +259,17 @@ def is_inside_board(square_nr):
     checks whether a given square number is within board limits
     """
     return 2 < square_nr < 193 and square_nr not in DEAD_SQUARES
+
+
+class MoveGenerator:
+    moves = []
+
+    def generate_moves(self):
+        self.moves.append(Move(None, 75, 89))
+        return self.moves
+
+
+
 
 
 
@@ -280,3 +293,6 @@ print('\n')
 print('rook moves', bin(rook_moves.get(3)))
 print('\n')
 print('queen_moves', bin(queen_moves[3]))
+print('\n')
+mg = MoveGenerator
+print(mg.generate_moves(mg))
