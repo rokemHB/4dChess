@@ -1,4 +1,4 @@
-from chess import board
+from chess import board_old
 from chess.constants import DEAD_SQUARES, SQUARE_SIZE, NORTH_INDEX, SOUTH_INDEX, WEST_INDEX, EAST_INDEX
 
 # some logic adapted to 4 player chess from https://github.com/SebLague/Chess-AI/

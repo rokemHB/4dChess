@@ -1,6 +1,6 @@
 import pygame
 
-from chess.board import Board
+from chess.board_old import Board
 from chess.constants import *  # TODO: might wanna specify if more constants get added
 
 # -5 to kill little bar due to rounding errors, take less when scaling down window size

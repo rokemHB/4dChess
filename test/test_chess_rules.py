@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import pygame
 
-from chess.board import Board
+from chess.board_old import Board
 from chess.pieces.king import King
 from chess.pieces.pawn import Pawn
 from chess.pieces.rook import Rook
