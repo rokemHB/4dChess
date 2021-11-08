@@ -16,7 +16,7 @@ class MoveGenerator:
     def __init__(self, board):
         self.board = board
         self.enemy_players = board.current_enemy_players
-        self.friendly_king_square = self.board.get_king_square.get(board.get_next_to_move())
+        self.friendly_king_square = self.board.king_square.get(board.get_next_to_move())
 
     # generates all legal moves for a given position
     def generate_moves(self):
