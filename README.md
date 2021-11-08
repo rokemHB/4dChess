@@ -24,6 +24,7 @@
 - More pieces / colors to chose from
 - Bo3 etc.
 - Turn board so that each client sees himself on bottom
+- [other variants](https://greenchess.net/variants.php?cat=9)
 
 
 ### References:
