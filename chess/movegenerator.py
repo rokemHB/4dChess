@@ -14,21 +14,22 @@ class MoveGenerator:
     friendly_king_square = 0
 
     def __init__(self, board):
+        self.in_check = False
+        self.in_double_check = False
+        self.pins_exist_in_position = False
+        self.check_ray_bitmask = 0
+        self.pin_ray_bitmask = 0
+
         self.board = board
         self.enemy_players = board.current_enemy_players
         self.friendly_king_square = self.board.king_square.get(board.get_next_to_move())
 
+        self.generate_moves()
+
     # generates all legal moves for a given position
     def generate_moves(self):
-        # Flags
-        in_check = False
-        in_double_check = False
-        pins_exist_in_position = False
-        check_ray_bitmask = 0
-        pin_ray_bitmask = 0
 
-        # color to move ....
-        pass
+        self.calculate_attack_data()
 
         # self.moves.append(Move(None, 75, 89))
         # return self.moves
@@ -64,3 +65,25 @@ class MoveGenerator:
                 if target_square != self.friendly_king_square:
                     if target_square_piece != piece.Piece.none:
                         break
+
+    def calculate_attack_data(self):
+        self.generate_sliding_attack_map()
+
+        # check for checks and pins
+        start_dir_index = 0
+        end_dir_index = 0
+
+        enemy_queens = []
+        for enemy in self.enemy_players:
+            enemy_queens.append(self.board.queens[enemy])  # TODO: this is retarded, need to make access for all but own pieces easier! -> auch Bitmaske oder sowas? ohne loopen...
+        if not enemy_queens:  # if list empty
+            enemy_rooks = []
+            enemy_bishops = []
+            for enemy in self.enemy_players:
+                enemy_rooks.append(self.board.rooks[enemy])
+            start_dir_index = 0 if not enemy_rooks else start_dir_index = 4
+            end_dir_index = 8 if not enemy_bishops else end_dir_index = 4
+
+        for dir in range(start_dir_index, end_dir_index, 1):
+            pass
+            # stuff
