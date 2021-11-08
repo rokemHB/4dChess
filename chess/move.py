@@ -51,7 +51,7 @@ class Move:
                flag == self.Flag.PROMOTE_TO_KNIGHT or flag == self.Flag.PROMOTE_TO_BISHOP
 
     def promotion_piece(self):
-        # swith promotion type and return Piece() object
+        # switch promotion type and return Piece() object
         pass
 
     def get_move_value(self):
@@ -60,7 +60,3 @@ class Move:
     # valid move
 
     # get name for move handy
-
-
-
-
