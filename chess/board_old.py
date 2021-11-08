@@ -68,6 +68,7 @@ class Board:
         Bishop(83, 'e'), Bishop(125, 'e'), King(111, 'e'), Queen(97, 'e')
     ]
 
+    # for testing only
     startPositions2 = [
         King(3, 'n'), Rook(31, 'w')
     ]

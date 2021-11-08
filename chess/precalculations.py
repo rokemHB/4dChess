@@ -16,7 +16,7 @@ direction_offsets = [-14, 14, -1, 1, -15, 15, -13, 13]
 knight_offsets = [-16, -29, -27, -12, 16, 29, 27, 12]
 
 # For every square, stores number of squares to the edge for all 8 direction for given position
-numSquaresToEdge = dict()
+num_squares_to_edge = dict()
 
 # TODO: the 0s are bad in here, not sure how to make array 196 long and dynamically add to each of the 196 lists?!
 #   0 still kinda okay since 0 is dead square in 4p chess
@@ -89,7 +89,7 @@ def precalculate_data():
                     else:
                         i += 1
                 temp_result.append(i - 1)
-            numSquaresToEdge[square_nr] = temp_result
+            num_squares_to_edge[square_nr] = temp_result
 
             ## ------------------------- ##
             # knight moves with bitboards #
@@ -194,7 +194,7 @@ def precalculate_data():
 
             for direction_index in range(4):
                 current_offset = direction_offsets[direction_index]
-                for step in range(numSquaresToEdge[square_nr][direction_index]):
+                for step in range(num_squares_to_edge[square_nr][direction_index]):
                     target_square = square_nr + current_offset * (step + 1)
                     rook_bitboard |= 1 << target_square
 
@@ -208,7 +208,7 @@ def precalculate_data():
 
             for direction_index in range(4, 8, 1):
                 current_offset = direction_offsets[direction_index]
-                for step in range(numSquaresToEdge[square_nr][direction_index]):
+                for step in range(num_squares_to_edge[square_nr][direction_index]):
                     target_square = square_nr + current_offset * (step + 1)
                     bishop_bitboard |= 1 << target_square
 
@@ -264,7 +264,7 @@ def is_inside_board(square_nr):
 
 # just for testing
 precalculate_data()
-print(numSquaresToEdge[73])
+print(num_squares_to_edge[73])
 print('\n')
 print(bin(knight_attack_bitboards.get(190)))
 print('\n')
