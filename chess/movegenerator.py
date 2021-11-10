@@ -24,6 +24,10 @@ class MoveGenerator:
         self.enemy_players = board.current_enemy_players
         self.friendly_king_square = self.board.king_square.get(board.get_next_to_move())
 
+        self.enemy_queens = self.board.queens[:self.board.next_to_move] + self.board.queens[self.board.next_to_move + 1:]
+        self.enemy_rooks = self.board.rooks[:self.board.next_to_move] + self.board.rooks[self.board.next_to_move + 1:]
+        self.enemy_bishops = self.board.bishops[:self.board.next_to_move] + self.board.bishops[self.board.next_to_move + 1:]
+
         self.generate_moves()
 
     # generates all legal moves for a given position
@@ -36,24 +40,12 @@ class MoveGenerator:
 
     def generate_sliding_attack_map(self):
         self.opponent_sliding_attack_map = 0
-
-        enemy_rooks = []
-        for enemy in self.enemy_players:
-            enemy_rooks.append(self.board.rooks[enemy])
-        for rook in enemy_rooks:
-            self.update_sliding_attack_piece(enemy_rooks[rook], 0, 4)  # direction offsets
-
-        enemy_queens = []
-        for enemy in self.enemy_players:
-            enemy_queens.append(self.board.queens[enemy])
-        for bitch in enemy_queens:
-            self.update_sliding_attack_piece(enemy_queens[bitch], 0, 8)
-
-        enemy_bishops = []
-        for enemy in self.enemy_players:
-            enemy_bishops.append(self.board.bishops[enemy])
-        for bhop in enemy_bishops:
-            self.update_sliding_attack_piece(enemy_bishops[bhop], 4, 8)
+        for rook in self.enemy_rooks:
+            self.update_sliding_attack_piece(self.enemy_rooks[rook], 0, 4)  # direction offsets
+        for bitch in self.enemy_queens:
+            self.update_sliding_attack_piece(self.enemy_queens[bitch], 0, 8)
+        for bhop in self.enemy_bishops:
+            self.update_sliding_attack_piece(self.enemy_bishops[bhop], 4, 8)
 
     def update_sliding_attack_piece(self, start_square, start_dir_index, end_dir_index):
         for direction_index in range(start_dir_index, end_dir_index, 1):
@@ -73,16 +65,9 @@ class MoveGenerator:
         start_dir_index = 0
         end_dir_index = 0
 
-        enemy_queens = []
-        for enemy in self.enemy_players:
-            enemy_queens.append(self.board.queens[enemy])  # TODO: this is retarded, need to make access for all but own pieces easier! -> auch Bitmaske oder sowas? ohne loopen...
-        if not enemy_queens:  # if list empty
-            enemy_rooks = []
-            enemy_bishops = []
-            for enemy in self.enemy_players:
-                enemy_rooks.append(self.board.rooks[enemy])
-            start_dir_index = 0 if not enemy_rooks else start_dir_index = 4
-            end_dir_index = 8 if not enemy_bishops else end_dir_index = 4
+        if not self.enemy_queens:  # if list empty
+            start_dir_index = 0 if not self.enemy_rooks else 4
+            end_dir_index = 8 if not self.enemy_bishops else 4
 
         for dir in range(start_dir_index, end_dir_index, 1):
             pass
