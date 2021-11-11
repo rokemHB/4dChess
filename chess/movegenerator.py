@@ -1,6 +1,6 @@
 from chess import piece
-from chess.move import Move
-from chess.precalculations import num_squares_to_edge, direction_offsets
+from chess.precalculations import num_squares_to_edge, direction_offsets, knight_attack_bitboards, \
+    bitboard_contains_square
 
 
 class MoveGenerator:
@@ -125,5 +125,17 @@ class MoveGenerator:
                 break
 
         # check for knight attacks
+        opponent_knight_attacks = 0
+        is_knight_check = False
+
+        for knight in self.enemy_knights:  # knight is the int square number
+            opponent_knight_attacks |= knight_attack_bitboards.get(knight)
+
+            if not is_knight_check and bitboard_contains_square(opponent_knight_attacks, self.friendly_king_square):
+                is_knight_check = True
+                self.in_double_check = self.in_check
+                self.in_check = True
+                self.check_ray_bitmask |= 1 << knight
 
 
+        # check for pawn attacks

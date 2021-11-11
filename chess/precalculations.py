@@ -261,6 +261,10 @@ def is_inside_board(square_nr):
     """
     return 2 < square_nr < 193 and square_nr not in DEAD_SQUARES
 
+def bitboard_contains_square (bitboard, square):
+    return ((bitboard >> square) & 1) != 0
+
+
 
 # just for testing
 precalculate_data()
