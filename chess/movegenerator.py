@@ -27,6 +27,7 @@ class MoveGenerator:
         self.enemy_queens = self.board.queens[:self.board.next_to_move] + self.board.queens[self.board.next_to_move + 1:]
         self.enemy_rooks = self.board.rooks[:self.board.next_to_move] + self.board.rooks[self.board.next_to_move + 1:]
         self.enemy_bishops = self.board.bishops[:self.board.next_to_move] + self.board.bishops[self.board.next_to_move + 1:]
+        self.enemy_knights = self.board.knights[:self.board.next_to_move] + self.board.knights[self.board.next_to_move + 1:]
 
         self.generate_moves()
 
@@ -61,7 +62,8 @@ class MoveGenerator:
     def calculate_attack_data(self):
         self.generate_sliding_attack_map()
 
-        # check for checks and pins
+        # check for checks and pins around own king
+        # check sliding pieces
         start_dir_index = 0
         end_dir_index = 0
 
@@ -70,5 +72,58 @@ class MoveGenerator:
             end_dir_index = 8 if not self.enemy_bishops else 4
 
         for dir in range(start_dir_index, end_dir_index, 1):
-            pass
-            # stuff
+            is_diagonal = dir > 3
+
+            n = num_squares_to_edge[self.friendly_king_square][dir]
+            direction_offset = direction_offsets[dir]
+            friendly_piece_along_way = False
+            ray_mask = 0
+
+            for i in range(n):
+                square_index = self.friendly_king_square + direction_offset * (i + 1)
+                ray_mask |= 1 << square_index
+                current_piece = self.board.square[square_index]
+
+                # square contains a piece
+                if current_piece is not piece.Piece.none:
+                    if piece.Piece.is_player(current_piece, self.board.next_to_move):
+
+                        # first friendly piece for this direction, so might be pinned
+                        if not friendly_piece_along_way:
+                            friendly_piece_along_way = True
+
+                        # second piece in that direction, so no pin is possible
+                        else:
+                            break
+
+                    # square contains enemy
+                    else:
+                        piece_type = piece.Piece.piece_type(current_piece)
+
+                        # check if piece is able to move:
+                        if (is_diagonal and piece.Piece.is_bishop_or_queen(piece_type)) or \
+                            (not is_diagonal and piece.Piece.is_rook_or_queen(piece_type)):
+
+                            # if friendly piece blocks a check its a pin
+                            if friendly_piece_along_way:
+                                self.pins_exist_in_position = True
+                                self.pin_ray_bitmask |= ray_mask
+
+                            # no friendly piece blocking so its check
+                            else:
+                                self.check_ray_bitmask |= ray_mask
+                                self.in_double_check = self.in_check  # if already check now double
+                                self.in_check = True
+                            break
+
+                        else:
+                            # current enemy piece not able to move into this direction so break
+                            break
+
+            # no need to search for pins in double check since only king moves allowed anyways
+            if self.in_double_check:
+                break
+
+        # check for knight attacks
+
+
