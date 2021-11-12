@@ -1,6 +1,6 @@
 from chess import piece
 from chess.precalculations import num_squares_to_edge, direction_offsets, knight_attack_bitboards, \
-    bitboard_contains_square
+    bitboard_contains_square, pawn_attack_bitboards, king_attack_bitboards
 
 
 class MoveGenerator:
@@ -8,7 +8,7 @@ class MoveGenerator:
     # initialize attributes
     moves = []
     #board = None
-    #enemy_players = []
+    enemy_players = []
     opponent_sliding_attack_map = 0
 
     friendly_king_square = 0
@@ -28,6 +28,8 @@ class MoveGenerator:
         self.enemy_rooks = self.board.rooks[:self.board.next_to_move] + self.board.rooks[self.board.next_to_move + 1:]
         self.enemy_bishops = self.board.bishops[:self.board.next_to_move] + self.board.bishops[self.board.next_to_move + 1:]
         self.enemy_knights = self.board.knights[:self.board.next_to_move] + self.board.knights[self.board.next_to_move + 1:]
+        self.enemy_pawns = self.board.pawns[:self.board.next_to_move] + self.board.pawns[self.board.next_to_move + 1:]
+        self.enemy_kings = self.board.kings[:self.board.next_to_move] + self.board.kings[self.board.next_to_move + 1:]
 
         self.generate_moves()
 
@@ -137,5 +139,27 @@ class MoveGenerator:
                 self.in_check = True
                 self.check_ray_bitmask |= 1 << knight
 
-
         # check for pawn attacks
+        opponent_pawn_attack_map = 0
+        is_pawn_check = False
+
+        for pawn in self.enemy_pawns:
+            pawn_attacks = 0
+            pawn_square = self.enemy_pawns[pawn]
+            for enemy in self.enemy_players:
+                pawn_attacks |= pawn_attack_bitboards[pawn][enemy]  # TODO: test if this works for all enemies, not sure whether summing them up like this works properly
+                opponent_pawn_attack_map |= pawn_attacks
+
+            if not is_pawn_check and bitboard_contains_square(pawn_attacks, self.friendly_king_square):
+                is_pawn_check = True
+                self.in_double_check = self.in_check
+                self.in_check = True
+                self.check_ray_bitmask |= 1 << pawn_square
+
+        # check for kings
+        opponent_king_attacks = 0
+        for king in self.enemy_kings:
+            opponent_king_attacks |= king_attack_bitboards[king]
+
+        opponent_attack_map_no_pawns = self.opponent_sliding_attack_map | opponent_king_attacks | opponent_king_attacks  # TODO: check scopes, do I need them as attributes like sliding or not? make all the same!
+        opponent_attack_map = opponent_attack_map_no_pawns | opponent_pawn_attack_map
