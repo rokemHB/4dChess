@@ -1,6 +1,7 @@
 from chess import piece
+from chess.move import Move
 from chess.precalculations import num_squares_to_edge, direction_offsets, knight_attack_bitboards, \
-    bitboard_contains_square, pawn_attack_bitboards, king_attack_bitboards
+    bitboard_contains_square, pawn_attack_bitboards, king_attack_bitboards, king_moves
 
 
 class MoveGenerator:
@@ -12,6 +13,7 @@ class MoveGenerator:
     opponent_sliding_attack_map = 0
 
     friendly_king_square = 0
+    opponent_attack_map = 0
 
     def __init__(self, board):
         self.in_check = False
@@ -22,7 +24,7 @@ class MoveGenerator:
 
         self.board = board
         self.enemy_players = board.current_enemy_players
-        self.friendly_king_square = self.board.king_square.get(board.get_next_to_move())
+        self.friendly_king_square = self.board.king_square.get(board.next_to_move())
 
         self.enemy_queens = self.board.queens[:self.board.next_to_move] + self.board.queens[self.board.next_to_move + 1:]
         self.enemy_rooks = self.board.rooks[:self.board.next_to_move] + self.board.rooks[self.board.next_to_move + 1:]
@@ -37,6 +39,7 @@ class MoveGenerator:
     def generate_moves(self):
 
         self.calculate_attack_data()
+        self.generate_king_moves()
 
         # self.moves.append(Move(None, 75, 89))
         # return self.moves
@@ -162,4 +165,35 @@ class MoveGenerator:
             opponent_king_attacks |= king_attack_bitboards[king]
 
         opponent_attack_map_no_pawns = self.opponent_sliding_attack_map | opponent_king_attacks | opponent_king_attacks  # TODO: check scopes, do I need them as attributes like sliding or not? make all the same!
-        opponent_attack_map = opponent_attack_map_no_pawns | opponent_pawn_attack_map
+        self.opponent_attack_map = opponent_attack_map_no_pawns | opponent_pawn_attack_map
+
+    def square_is_attacked(self, square):
+        return bitboard_contains_square(self.opponent_attack_map, square)
+
+    def square_is_in_check_ray(self, square):
+        return self.in_check and ((self.check_ray_bitmask >> square) & 1) != 0
+
+    def generate_king_moves(self):
+        for i in range(len(king_moves[self.friendly_king_square])):
+            target_square = king_moves[self.friendly_king_square][i]
+            piece_on_target_square = self.board.square[target_square]
+
+            # skip if own piece is on square
+            if piece.Piece.is_player(piece_on_target_square, self.board.next_to_move):
+                continue
+
+            is_capture = False
+            for enemy in self.enemy_players:
+                is_capture |= piece.Piece.is_player(piece_on_target_square, enemy)  # TODO: test whether this works as intended
+
+            if not is_capture:
+                # King can't move into square controlled by enemy unless it captures
+                if self.square_is_in_check_ray(target_square):
+                    continue
+
+            # King can move to this square
+            if not self.square_is_attacked(target_square):
+                self.moves.append(Move(self.friendly_king_square, target_square))
+
+                # Castling
+
