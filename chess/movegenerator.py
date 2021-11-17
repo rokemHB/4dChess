@@ -1,4 +1,5 @@
 from chess import piece
+from chess.constants import NORTH_INDEX
 from chess.move import Move
 from chess.precalculations import num_squares_to_edge, direction_offsets, knight_attack_bitboards, \
     bitboard_contains_square, pawn_attack_bitboards, king_attack_bitboards, king_moves
@@ -25,6 +26,15 @@ class MoveGenerator:
         self.board = board
         self.enemy_players = board.current_enemy_players
         self.friendly_king_square = self.board.king_square.get(board.next_to_move())
+
+        self.north_has_king_castle_right = True
+        self.north_has_queen_castle_right = True
+        self.south_has_king_castle_right = True
+        self.south_has_queen_castle_right = True
+        self.west_has_king_castle_right = True
+        self.west_has_queen_castle_right = True
+        self.east_has_king_castle_right = True
+        self.east_has_queen_castle_right = True
 
         self.enemy_queens = self.board.queens[:self.board.next_to_move] + self.board.queens[self.board.next_to_move + 1:]
         self.enemy_rooks = self.board.rooks[:self.board.next_to_move] + self.board.rooks[self.board.next_to_move + 1:]
@@ -196,4 +206,9 @@ class MoveGenerator:
                 self.moves.append(Move(self.friendly_king_square, target_square))
 
                 # Castling
+                if not self.in_check and not is_capture:
+
+                    # Need to differentiate between four players
+                    if self.board.next_to_move == NORTH_INDEX:
+                        if target_square == 3 and self.north_has_king_castle_right:
 
