@@ -1,5 +1,5 @@
 from chess import piece
-from chess.constants import NORTH_INDEX
+from chess.constants import NORTH_INDEX, SOUTH_INDEX
 from chess.move import Move
 from chess.precalculations import num_squares_to_edge, direction_offsets, knight_attack_bitboards, \
     bitboard_contains_square, pawn_attack_bitboards, king_attack_bitboards, king_moves
@@ -210,5 +210,19 @@ class MoveGenerator:
 
                     # Need to differentiate between four players
                     if self.board.next_to_move == NORTH_INDEX:
-                        if target_square == 3 and self.north_has_king_castle_right:
+                        if target_square == 5 and self.north_has_king_castle_right:
+                            castle_kingside_square = target_square - 1  # King moves 2 positions
+                            if self.board.square[castle_kingside_square] == piece.Piece.none:
+                                if not self.square_is_attacked(castle_kingside_square):
+                                    self.moves.append(Move(self.friendly_king_square, castle_kingside_square, Move.Flag.CASTLING))
 
+                        # TODO: implement the other 7 possible castle directions
+                        if target_square == 8 and self.north_has_queen_castle_right:
+                            castle_queenside_square = target_square + 1
+                            if self.board.square[castle_queenside_square] == piece.Piece.none:
+                                if not self.square_is_attacked(castle_queenside_square):
+                                    self.moves.append(
+                                        Move(self.friendly_king_square, castle_queenside_square, Move.Flag.CASTLING))
+
+                    if self.board.next_to_move == SOUTH_INDEX:
+                        pass
